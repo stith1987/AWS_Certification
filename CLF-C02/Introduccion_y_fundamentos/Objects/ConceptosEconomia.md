@@ -28,6 +28,33 @@ El examen evalúa si el candidato comprende el cambio financiero fundamental que
 
 > **Tip de examen:** Cualquier pregunta que compare "inversión inicial grande" vs. "pago variable" está evaluando CapEx vs. OpEx. La respuesta correcta siempre favorece OpEx como beneficio de la nube.
 
+### CapEx vs OpEx: Flujo de inversión
+
+```mermaid
+flowchart LR
+    subgraph CAPEX["❌ CapEx (On-Premises)"]
+        direction TB
+        C1["💸 Inversión inicial\n$$$$$"] --> C2["🏗️ Comprar hardware\ny construir DC"]
+        C2 --> C3["👷 Contratar personal\nde mantenimiento"]
+        C3 --> C4["📉 Depreciación\ndel hardware"]
+        C4 --> C5["🔄 Renovar cada\n3-5 años"]
+        C5 --> C1
+    end
+
+    subgraph OPEX["✅ OpEx (AWS Cloud)"]
+        direction TB
+        O1["💰 $0 inversión\ninicial"] --> O2["📊 Pago mensual\npor consumo"]
+        O2 --> O3["📈 Escalar según\ndemanda"]
+        O3 --> O4["🎯 Enfoque en\ninnovación"]
+        O4 --> O2
+    end
+
+    CAPEX -.->|"Migrar\na la nube"| OPEX
+
+    style CAPEX fill:#FF4444,color:#fff,stroke:#CC0000
+    style OPEX fill:#00AA00,color:#fff,stroke:#008800
+```
+
 ---
 
 ## 2. Modelos de Precios y Pago por Uso
@@ -72,6 +99,27 @@ El examen CLF-C02 requiere que el candidato identifique los diferentes modelos d
 > - "Cumplimiento normativo, licencias propias" → **Dedicated Hosts**
 > - "No sé cuánto voy a usar" → **On-Demand**
 
+### Modelos de precios EC2: Costo vs Flexibilidad
+
+```mermaid
+flowchart TD
+    Q["❓ ¿Qué modelo de\nprecios EC2 usar?"] --> F1{"¿La carga es\npredecible y estable?"}
+    Q --> F2{"¿Puede interrumpirse\nsin problema?"}
+    Q --> F3{"¿Necesita hardware\ndedicado o BYOL?"}
+    Q --> F4{"¿No sabe cuánto\nva a usar?"}
+
+    F1 -->|Sí| R1["💵 Savings Plans /\nReserved Instances\n🏷️ Hasta 72% descuento\n📅 Compromiso 1-3 años"]
+    F2 -->|Sí| R2["🏷️ Spot Instances\n🏷️ Hasta 90% descuento\n⚠️ Puede interrumpirse\nen 2 min"]
+    F3 -->|Sí| R3["🖥️ Dedicated Hosts\n🏷️ Precio variable\n🔒 Cumplimiento\nregulatorio / BYOL"]
+    F4 -->|Sí| R4["💳 On-Demand\n🏷️ Sin descuento\n✅ Máxima flexibilidad\n⏱️ Pago por hora/segundo"]
+
+    style Q fill:#FF9900,color:#fff
+    style R1 fill:#0d904f,color:#fff
+    style R2 fill:#1a73e8,color:#fff
+    style R3 fill:#232F3E,color:#fff
+    style R4 fill:#e8710a,color:#fff
+```
+
 ---
 
 ## 3. Economías de Escala y Costo Total de Propiedad (TCO)
@@ -97,6 +145,31 @@ El TCO compara el costo **real** de operar on-premises vs. en la nube, incluyend
 
 > **Tip de examen:** Si la pregunta menciona "comparar costos entre on-premises y la nube", piensa en **TCO** y en la herramienta **Migration Evaluator** (antes TSO Logic).
 
+### TCO: Costos ocultos de On-Premises
+
+```mermaid
+flowchart TB
+    subgraph ON["💸 TCO On-Premises (Costos ocultos)"]
+        direction LR
+        H["🖥️ Hardware\nServidores, storage\nnetworking"] --> I["🏢 Instalaciones\nEspacio, energía\nrefrigeración"]
+        I --> P["👷 Personal\nAdmins, seguridad\nsoporte 24/7"]
+        P --> M["🔧 Mantenimiento\nActualizaciones\ngarantías"]
+        M --> L["📜 Licencias\nSO, BD\nvirtualización"]
+        L --> S["🔒 Seguridad\nFísica, cámaras\nacceso"]
+    end
+
+    subgraph AWS["💰 TCO en AWS"]
+        direction LR
+        A1["☁️ Pago por uso\nSolo recursos\nconsumidos"] --> A2["🔄 AWS gestiona\nhardware, energía\nseguridad física"]
+        A2 --> A3["📉 Sin costos\nocultos"]
+    end
+
+    ON -.->|"Migration Evaluator\ncompara TCO"| AWS
+
+    style ON fill:#FF4444,color:#fff,stroke:#CC0000
+    style AWS fill:#00AA00,color:#fff,stroke:#008800
+```
+
 ---
 
 ## 4. Herramientas de Gestión de Costos
@@ -121,6 +194,30 @@ El Dominio 4 del examen se centra en las herramientas disponibles para monitorea
 - **AWS Cost and Usage Report:** El informe más detallado y granular de AWS sobre consumo y costos. Se puede integrar con Amazon Athena o Amazon QuickSight para análisis avanzado.
 
 > **Tip de examen:** "Alertar cuando el gasto supere X" = **AWS Budgets**. "Visualizar tendencias de gasto" = **Cost Explorer**. "Estimar costos antes de construir" = **Pricing Calculator**.
+
+### Ciclo de gestión de costos en AWS
+
+```mermaid
+flowchart LR
+    subgraph ANTES["1️⃣ Antes de construir"]
+        P["🧮 Pricing Calculator\nEstimar costos\nmensuales"]
+    end
+
+    subgraph DURANTE["2️⃣ Mientras opera"]
+        B["🔔 AWS Budgets\nPresupuestos\ny alertas"] --> T["🏷️ Cost Allocation\nTags\nRastrear por proyecto"]
+    end
+
+    subgraph DESPUES["3️⃣ Analizar y optimizar"]
+        CE["📊 Cost Explorer\nTendencias y\nrecomendaciones"] --> CUR["📋 Cost & Usage\nReport\nDetalle granular"]
+    end
+
+    ANTES --> DURANTE --> DESPUES
+    DESPUES -.->|"Optimizar"| DURANTE
+
+    style ANTES fill:#FF9900,color:#fff
+    style DURANTE fill:#1a73e8,color:#fff
+    style DESPUES fill:#0d904f,color:#fff
+```
 
 ---
 
@@ -157,6 +254,39 @@ Para los nuevos usuarios, AWS ofrece un nivel gratuito que es vital conocer para
 
 > **Tip de examen:** Solo los planes **Business** y superiores incluyen acceso a **AWS Trusted Advisor** completo y soporte 24/7 por teléfono. El plan **Enterprise** incluye un **Technical Account Manager (TAM)** dedicado.
 
+### Planes de soporte: Escalamiento de capacidades
+
+```mermaid
+flowchart LR
+    subgraph B["Basic\n🆓 Gratis"]
+        B1["📚 Docs + Foros\n🔧 7 checks\nTrusted Advisor"]
+    end
+
+    subgraph D["Developer\n💵 $29/mes"]
+        D1["📧 Email horario\nlaboral\n⏱️ 12-24h respuesta"]
+    end
+
+    subgraph BU["Business\n💰 $100/mes"]
+        BU1["📞 24/7 teléfono\n+ chat + email\n✅ Trusted Advisor\ncompleto\n⏱️ 1h (producción)"]
+    end
+
+    subgraph EOR["Enterprise\nOn-Ramp\n💎 $5,500/mes"]
+        EOR1["📞 24/7\n👥 Pool de TAMs\n⏱️ 30min (crítico)"]
+    end
+
+    subgraph E["Enterprise\n👑 $15,000/mes"]
+        E1["📞 24/7\n🧑‍💼 TAM dedicado\n🏗️ Revisión\narquitectónica\n⏱️ 15min (crítico)"]
+    end
+
+    B --> D --> BU --> EOR --> E
+
+    style B fill:#f5f5f5,color:#333
+    style D fill:#1a73e8,color:#fff
+    style BU fill:#e8710a,color:#fff
+    style EOR fill:#232F3E,color:#fff
+    style E fill:#FF9900,color:#fff
+```
+
 ---
 
 ## Resumen para el Candidato
@@ -185,3 +315,30 @@ Para aprobar las secciones de economía en el examen CLF-C02, debe dominar estos
 - **"Analizar gastos pasados"** → AWS Cost Explorer
 - **"Múltiples cuentas, una factura"** → AWS Organizations, Consolidated Billing
 - **"Soporte técnico avanzado"** → Business, Enterprise On-Ramp, Enterprise
+
+### Árbol de decisión para preguntas del examen
+
+```mermaid
+flowchart TD
+    Q["❓ Pregunta sobre\nEconomía de la Nube"] --> K1{"¿Habla de inversión\ninicial vs pago variable?"}
+    Q --> K2{"¿Habla de reducir\ncostos de cómputo?"}
+    Q --> K3{"¿Habla de monitorear\no controlar gastos?"}
+    Q --> K4{"¿Habla de comparar\ncostos on-prem vs nube?"}
+    Q --> K5{"¿Habla de soporte\ntécnico o TAM?"}
+    Q --> K6{"¿Habla de múltiples\ncuentas y facturación?"}
+
+    K1 -->|Sí| A1["💰 CapEx vs OpEx\nPago por uso\nSin inversión inicial"]
+    K2 -->|Sí| A2["🏷️ Modelos de Precios\nOn-Demand, Reserved\nSavings Plans, Spot"]
+    K3 -->|Sí| A3["📊 Herramientas de Costos\nBudgets, Cost Explorer\nPricing Calculator, Tags"]
+    K4 -->|Sí| A4["📋 TCO\nMigration Evaluator\nCostos ocultos"]
+    K5 -->|Sí| A5["🎧 Support Plans\nBasic → Enterprise\nTAM, Trusted Advisor"]
+    K6 -->|Sí| A6["🏢 Organizations\nFacturación consolidada\nDescuentos por volumen"]
+
+    style Q fill:#FF9900,color:#fff
+    style A1 fill:#232F3E,color:#fff
+    style A2 fill:#232F3E,color:#fff
+    style A3 fill:#232F3E,color:#fff
+    style A4 fill:#232F3E,color:#fff
+    style A5 fill:#232F3E,color:#fff
+    style A6 fill:#232F3E,color:#fff
+```
