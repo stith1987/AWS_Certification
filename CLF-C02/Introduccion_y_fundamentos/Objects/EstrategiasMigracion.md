@@ -39,6 +39,32 @@ El examen a menudo pregunta qué perspectiva aborda un problema específico. Se 
 
 > **Tip de examen:** Si la pregunta menciona "RRHH", "capacitación" o "cultura organizacional", la respuesta es la perspectiva de **Personas**. Si menciona "cumplimiento" o "riesgo", es **Gobernanza**.
 
+### Las 6 perspectivas del CAF
+
+```mermaid
+flowchart TD
+    CAF["🏗️ AWS Cloud Adoption\nFramework (CAF)"] --> BIZ["📊 Capacidades\nde Negocio"]
+    CAF --> TECH["⚙️ Capacidades\nTécnicas"]
+
+    BIZ --> B1["💼 Negocio\nCEO, CFO\nObjetivos empresariales"]
+    BIZ --> B2["👥 Personas\nRRHH, CTO\nCultura y habilidades"]
+    BIZ --> B3["📋 Gobernanza\nCIO, CTO\nRiesgos y cumplimiento"]
+
+    TECH --> T1["🖥️ Plataforma\nArquitectos\nAutoscaling, almacenamiento"]
+    TECH --> T2["🔒 Seguridad\nCISO\nCIA: Confidencialidad,\nIntegridad, Disponibilidad"]
+    TECH --> T3["🔧 Operaciones\nSysOps, DevOps\nServicios día a día"]
+
+    style CAF fill:#FF9900,color:#fff,stroke:#FF9900
+    style BIZ fill:#1a73e8,color:#fff
+    style TECH fill:#0d904f,color:#fff
+    style B1 fill:#232F3E,color:#fff
+    style B2 fill:#232F3E,color:#fff
+    style B3 fill:#232F3E,color:#fff
+    style T1 fill:#232F3E,color:#fff
+    style T2 fill:#232F3E,color:#fff
+    style T3 fill:#232F3E,color:#fff
+```
+
 ### El Viaje de Transformación
 
 Sequeira describe cuatro fases del viaje de transformación en la nube:
@@ -47,6 +73,18 @@ Sequeira describe cuatro fases del viaje de transformación en la nube:
 2. **Alineación** — Identificar brechas en las 6 perspectivas del CAF.
 3. **Lanzamiento** — Implementar iniciativas piloto en producción.
 4. **Escala** — Expandir las iniciativas a toda la organización.
+
+```mermaid
+flowchart LR
+    V["1️⃣ Visión\nCaso de negocio\nOportunidades"] --> AL["2️⃣ Alineación\nIdentificar brechas\nen las 6 perspectivas"]
+    AL --> L["3️⃣ Lanzamiento\nPilotos en\nproducción"]
+    L --> E["4️⃣ Escala\nExpandir a toda\nla organización"]
+
+    style V fill:#FF9900,color:#fff
+    style AL fill:#e8710a,color:#fff
+    style L fill:#1a73e8,color:#fff
+    style E fill:#0d904f,color:#fff
+```
 
 ---
 
@@ -65,6 +103,36 @@ Las estrategias de migración, conocidas como las **7 R's**, definen cómo se mu
 | **Relocate** | Mover infraestructura a la nube sin comprar nuevo hardware | Migrar VMware on-premises a VMware Cloud on AWS |
 
 > **Tip de examen:** "Lift and Shift" = **Rehost** (la más rápida, sin cambios). "Rediseñar para la nube" = **Refactor** (la más compleja, mayor beneficio a largo plazo).
+
+### Espectro de las 7 R's: Esfuerzo vs Beneficio
+
+```mermaid
+flowchart LR
+    subgraph NO["🚫 No migrar"]
+        direction TB
+        RT["Retire\n🗑️ Eliminar"] ~~~ RN["Retain\n🏠 Mantener\non-premises"]
+    end
+
+    subgraph MIGRAR["✅ Migrar a AWS"]
+        direction LR
+        RL["Relocate\n📦 VMware\na VMware\non AWS"] --> RH["Rehost\n🏗️ Lift &\nShift\n(Sin cambios)"]
+        RH --> RP["Replatform\n🔧 Lift,\nTinker &\nShift\n(Optimizar)"]
+        RP --> RF["Refactor\n🏛️ Re-architect\n(Rediseñar\nnativo nube)"]
+    end
+
+    subgraph REEMPLAZAR["🔄 Reemplazar"]
+        RPU["Repurchase\n🛒 Comprar\nSaaS"]
+    end
+
+    NO --> MIGRAR --> REEMPLAZAR
+
+    RL -.->|"⬅️ Menor esfuerzo"| RF
+    RL -.->|"Mayor beneficio ➡️"| RF
+
+    style NO fill:#FF4444,color:#fff
+    style MIGRAR fill:#1a73e8,color:#fff
+    style REEMPLAZAR fill:#0d904f,color:#fff
+```
 
 ---
 
@@ -90,6 +158,24 @@ Herramienta complementaria a DMS para migraciones **heterogéneas**.
 
 > **Tip de examen:** DMS = migrar los **datos**. SCT = convertir el **esquema/estructura**. Para migraciones heterogéneas, se usan ambos juntos.
 
+### Flujo de migración de bases de datos
+
+```mermaid
+flowchart TD
+    subgraph HOMO["Migración Homogénea (mismo motor)"]
+        direction LR
+        H1["🗄️ Oracle\n(On-Premises)"] -->|"DMS"| H2["🗄️ Oracle\n(RDS)"]
+    end
+
+    subgraph HETERO["Migración Heterogénea (distinto motor)"]
+        direction LR
+        E1["🗄️ Oracle\n(On-Premises)"] -->|"1️⃣ SCT\nConvertir esquema"| E2["📋 Esquema\nconvertido"] -->|"2️⃣ DMS\nMigrar datos"| E3["🗄️ Aurora\nPostgreSQL (RDS)"]
+    end
+
+    style HOMO fill:#0d904f,color:#fff
+    style HETERO fill:#e8710a,color:#fff
+```
+
 ---
 
 ## 4. Migración y Transferencia de Datos (Almacenamiento)
@@ -107,6 +193,31 @@ Ideal para mover grandes volúmenes de datos (terabytes a petabytes) cuando la t
 | **Snowmobile** | Hasta 100 PB (exabytes) | Contenedor de 45 pies para migraciones a escala masiva |
 
 > **Tip de examen:** Si la pregunta menciona "sin conexión a internet", "ancho de banda limitado" o "petabytes de datos", piensa en la **familia Snow**.
+
+### Decisión: Transferencia en línea vs física
+
+```mermaid
+flowchart TD
+    Q["❓ ¿Cómo transferir\ndatos a AWS?"] --> SIZE{"¿Cuántos datos?"}
+
+    SIZE -->|"GBs - TBs\nBuen ancho de banda"| ONLINE["🌐 Transferencia en Línea"]
+    SIZE -->|"TBs - PBs\nAncho de banda limitado"| OFFLINE["📦 Transferencia Física\n(Snow Family)"]
+
+    ONLINE --> DS["AWS DataSync\n🚀 Rápido, automatizado"]
+    ONLINE --> SG["Storage Gateway\n🔗 Híbrido, NFS/SMB"]
+    ONLINE --> TF["Transfer Family\n📁 SFTP/FTPS"]
+
+    OFFLINE --> SC["Snowcone\n📱 8-14 TB\nPortátil"]
+    OFFLINE --> SB["Snowball Edge\n📦 80 TB\n+ Cómputo local"]
+    OFFLINE --> SM["Snowmobile\n🚛 100 PB\nContenedor"]
+
+    style Q fill:#FF9900,color:#fff
+    style ONLINE fill:#1a73e8,color:#fff
+    style OFFLINE fill:#232F3E,color:#fff
+    style SC fill:#0d904f,color:#fff
+    style SB fill:#0d904f,color:#fff
+    style SM fill:#0d904f,color:#fff
+```
 
 ### Transferencia en Línea
 
@@ -132,6 +243,35 @@ Para gestionar migraciones complejas, las fuentes identifican herramientas de ge
 | **Migration Evaluator** | Crea un caso de negocio para la migración estimando el TCO en AWS |
 
 > **Tip de examen:** "Descubrir servidores on-premises" = **Application Discovery Service**. "Rastrear progreso de migración" = **Migration Hub**.
+
+### Flujo completo de migración
+
+```mermaid
+flowchart LR
+    subgraph PLAN["1️⃣ Planificar"]
+        direction TB
+        P1["Migration Evaluator\n💰 Caso de negocio\n(TCO)"]
+        P2["Application Discovery\n🔍 Descubrir servidores\ny dependencias"]
+    end
+
+    subgraph MIGR["2️⃣ Migrar"]
+        direction TB
+        M1["MGN\n🏗️ Lift & Shift\n(servidores)"]
+        M2["DMS + SCT\n🗄️ Bases de datos"]
+        M3["Snow Family\n📦 Datos masivos"]
+    end
+
+    subgraph TRACK["3️⃣ Rastrear"]
+        direction TB
+        T1["Migration Hub\n📊 Panel centralizado\nde progreso"]
+    end
+
+    PLAN --> MIGR --> TRACK
+
+    style PLAN fill:#FF9900,color:#fff
+    style MIGR fill:#1a73e8,color:#fff
+    style TRACK fill:#0d904f,color:#fff
+```
 
 ---
 
@@ -159,3 +299,30 @@ Para aprobar las secciones relacionadas con la migración en el examen CLF-C02, 
 - **"Cultura / capacitación / RRHH"** → CAF - Perspectiva de Personas
 - **"Riesgo / cumplimiento"** → CAF - Perspectiva de Gobernanza
 - **"Descubrir servidores"** → Application Discovery Service
+
+### Árbol de decisión para preguntas del examen
+
+```mermaid
+flowchart TD
+    Q["❓ Pregunta sobre\nMigración a AWS"] --> K1{"¿Habla de cultura,\nRRHH o capacitación?"}
+    Q --> K2{"¿Habla de mover app\nsin cambios?"}
+    Q --> K3{"¿Habla de rediseñar\npara la nube?"}
+    Q --> K4{"¿Habla de migrar\nbases de datos?"}
+    Q --> K5{"¿Habla de datos masivos\no sin internet?"}
+    Q --> K6{"¿Habla de descubrir\nservidores o rastrear?"}
+
+    K1 -->|Sí| A1["👥 CAF - Personas\nGobernanza, Negocio"]
+    K2 -->|Sí| A2["🏗️ Rehost\nLift & Shift\nMGN"]
+    K3 -->|Sí| A3["🏛️ Refactor\nMicroservicios\nLambda, containers"]
+    K4 -->|Sí| A4["🗄️ DMS + SCT\nHomogénea o\nheterogénea"]
+    K5 -->|Sí| A5["📦 Snow Family\nSnowcone, Snowball\nSnowmobile"]
+    K6 -->|Sí| A6["🔍 Discovery Service\n📊 Migration Hub"]
+
+    style Q fill:#FF9900,color:#fff
+    style A1 fill:#232F3E,color:#fff
+    style A2 fill:#232F3E,color:#fff
+    style A3 fill:#232F3E,color:#fff
+    style A4 fill:#232F3E,color:#fff
+    style A5 fill:#232F3E,color:#fff
+    style A6 fill:#232F3E,color:#fff
+```
