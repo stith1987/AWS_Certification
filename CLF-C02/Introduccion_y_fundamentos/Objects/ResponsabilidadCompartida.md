@@ -19,6 +19,35 @@ El examen evalúa constantemente si puede distinguir entre estas dos preposicion
 
 > **Tip de examen:** Esta distinción "DE" vs. "EN" es la regla de oro. Si la puedes aplicar correctamente, responderás la mayoría de las preguntas de responsabilidad compartida.
 
+### Modelo visual: "DE" vs "EN" la nube
+
+```mermaid
+flowchart TB
+    subgraph CLIENTE["🔵 CLIENTE: Seguridad EN la nube"]
+        direction TB
+        C1["📊 Datos del cliente"]
+        C2["🔐 Cifrado (reposo + tránsito)"]
+        C3["👤 IAM: usuarios, roles, MFA"]
+        C4["🛡️ Security Groups + NACLs"]
+        C5["💻 Parcheo del SO (en EC2)"]
+        C6["⚙️ Configuración de aplicaciones"]
+    end
+
+    subgraph AWS["🟠 AWS: Seguridad DE la nube"]
+        direction TB
+        A1["🖥️ Hardware: servidores, storage, red"]
+        A2["🏗️ Infraestructura global: Regiones, AZ, Edge"]
+        A3["🔧 Software de virtualización (hipervisor)"]
+        A4["🏢 Seguridad física de centros de datos"]
+        A5["🗑️ Destrucción segura de hardware"]
+    end
+
+    CLIENTE ~~~ AWS
+
+    style CLIENTE fill:#1a73e8,color:#fff
+    style AWS fill:#FF9900,color:#fff
+```
+
 ---
 
 ## 2. Responsabilidades de AWS (Lo que hereda el cliente)
@@ -76,6 +105,35 @@ Este es un punto crítico para el examen y donde muchos candidatos fallan. La l�
 
 > **Tip de examen:** Cuanto más **gestionado** sea el servicio, **menos** responsabilidad tiene el cliente. Lambda = mínima responsabilidad del cliente. EC2 = máxima responsabilidad del cliente.
 
+### Deslizamiento de responsabilidad por tipo de servicio
+
+```mermaid
+flowchart LR
+    subgraph EC2["🖥️ IaaS (EC2)\nMáxima responsabilidad\ndel cliente"]
+        direction TB
+        E1["👤 Cliente:\nDatos + App + SO\n+ Parches + Firewall"]
+        E2["🟠 AWS:\nHardware + Red\n+ Hipervisor"]
+    end
+
+    subgraph RDS["🗄️ PaaS (RDS)\nResponsabilidad\ncompartida"]
+        direction TB
+        R1["👤 Cliente:\nDatos + Config BD\n+ Acceso"]
+        R2["🟠 AWS:\nSO + Parches BD\n+ Hardware"]
+    end
+
+    subgraph LAMBDA["⚡ Serverless (Lambda)\nMínima responsabilidad\ndel cliente"]
+        direction TB
+        L1["👤 Cliente:\nCódigo + Datos"]
+        L2["🟠 AWS:\nTodo lo demás\n(SO, runtime, infra)"]
+    end
+
+    EC2 -->|"Más gestionado →"| RDS -->|"Más gestionado →"| LAMBDA
+
+    style EC2 fill:#FF4444,color:#fff
+    style RDS fill:#e8710a,color:#fff
+    style LAMBDA fill:#00AA00,color:#fff
+```
+
 ---
 
 ## 5. Clasificación de Controles de TI
@@ -98,6 +156,28 @@ Sequeira introduce una clasificación específica de controles que puede aparece
 
 > **Tip de examen:** Los controles **compartidos** son los más confusos en el examen. Recuerda que "compartido" significa que ambos hacen la misma actividad pero en su propio contexto.
 
+### Los 3 tipos de controles
+
+```mermaid
+flowchart TD
+    CTR["🔒 Controles de TI\nen AWS"] --> H["🟠 Heredados\n(100% AWS)"]
+    CTR --> S["🟡 Compartidos\n(AWS + Cliente)"]
+    CTR --> C["🔵 Específicos\ndel Cliente"]
+
+    H --> H1["Seguridad física\nProtección ambiental\nInfraestructura de red"]
+
+    S --> S1["Parcheo:\nAWS → infraestructura\nCliente → SO y apps"]
+    S --> S2["Configuración:\nAWS → dispositivos\nCliente → BD y apps"]
+    S --> S3["Entrenamiento:\nAWS → sus empleados\nCliente → sus empleados"]
+
+    C --> C1["Cifrar columna en BD\nEnrutamiento de datos\nZonas de seguridad"]
+
+    style CTR fill:#FF9900,color:#fff
+    style H fill:#232F3E,color:#fff
+    style S fill:#e8710a,color:#fff
+    style C fill:#1a73e8,color:#fff
+```
+
 ---
 
 ## 6. Servicios de Seguridad Clave para el Examen
@@ -117,6 +197,29 @@ Aunque pertenecen al Dominio 2 en general, estos servicios están directamente r
 | **AWS Config** | Auditoría de configuración de recursos | Cliente |
 
 > **Tip de examen:** Security Groups = **stateful** (recuerdan el estado de la conexión). NACLs = **stateless** (evalúan cada paquete independientemente). Esta distinción aparece frecuentemente en el examen.
+
+### Capas de seguridad: Defensa en profundidad
+
+```mermaid
+flowchart TD
+    U["👤 Usuario / Atacante"] --> EDGE["🌐 Edge Location\n🛡️ Shield (DDoS)\n🔥 WAF (SQL injection, XSS)"]
+    EDGE --> VPC["🏗️ VPC\n📋 NACLs (Stateless)\nFirewall a nivel de subred"]
+    VPC --> SG["🖥️ Instancia EC2\n🔒 Security Groups (Stateful)\nFirewall a nivel de instancia"]
+    SG --> APP["⚙️ Aplicación\n👤 IAM (autenticación)\n📜 Políticas (autorización)"]
+    APP --> DATA["📊 Datos\n🔐 KMS (cifrado en reposo)\n🔒 TLS (cifrado en tránsito)"]
+
+    EDGE -.-> AWSR["🟠 AWS gestiona\nShield Standard"]
+    VPC -.-> CLIR["🔵 Cliente configura\nreglas NACL"]
+    SG -.-> CLI2["🔵 Cliente configura\nreglas SG"]
+    APP -.-> CLI3["🔵 Cliente gestiona\nIAM y permisos"]
+    DATA -.-> CLI4["🔵 Cliente decide\nqué cifrar"]
+
+    style EDGE fill:#FF9900,color:#fff
+    style VPC fill:#e8710a,color:#fff
+    style SG fill:#1a73e8,color:#fff
+    style APP fill:#232F3E,color:#fff
+    style DATA fill:#0d904f,color:#fff
+```
 
 ---
 
@@ -153,3 +256,31 @@ Para aprobar las preguntas sobre el Modelo de Responsabilidad Compartida:
 - **"Parchear sistema operativo"** → Depende del servicio (EC2 = cliente, RDS/Lambda = AWS)
 - **"Configuración de firewall"** → Responsabilidad del cliente (Security Groups, NACLs)
 - **"¿Quién tiene la culpa de la filtración?"** → Casi siempre el cliente (mala configuración)
+
+### Árbol de decisión para preguntas del examen
+
+```mermaid
+flowchart TD
+    Q["❓ Pregunta sobre\nResponsabilidad Compartida"] --> K1{"¿Menciona hardware,\ncentro de datos\no hipervisor?"}
+    Q --> K2{"¿Menciona datos,\ncifrado o IAM?"}
+    Q --> K3{"¿Menciona parchear\nel sistema operativo?"}
+    Q --> K4{"¿Menciona firewall\no reglas de red?"}
+    Q --> K5{"¿Menciona una filtración\no brecha de seguridad?"}
+
+    K1 -->|Sí| A1["🟠 AWS\nSeguridad DE la nube\nInfraestructura física"]
+    K2 -->|Sí| A2["🔵 Cliente\nSeguridad EN la nube\nDatos y acceso"]
+    K3 -->|Sí| A3{"¿Qué servicio?"}
+    K4 -->|Sí| A4["🔵 Cliente\nSecurity Groups\nNACLs, WAF"]
+    K5 -->|Sí| A5["🔵 Casi siempre\nel Cliente\n(mala configuración)"]
+
+    A3 -->|"EC2"| B1["🔵 Cliente\nparchea el SO"]
+    A3 -->|"RDS / Lambda"| B2["🟠 AWS\nparchea el SO"]
+
+    style Q fill:#FF9900,color:#fff
+    style A1 fill:#FF9900,color:#fff
+    style A2 fill:#1a73e8,color:#fff
+    style A4 fill:#1a73e8,color:#fff
+    style A5 fill:#1a73e8,color:#fff
+    style B1 fill:#1a73e8,color:#fff
+    style B2 fill:#FF9900,color:#fff
+```

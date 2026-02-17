@@ -33,6 +33,46 @@ Outposts → AWS en su centro de datos
 
 > **Tip de examen:** Recuerda la jerarquía de mayor a menor: **Regiones > AZ > Centros de datos**. Las Edge Locations están separadas de esta jerarquía.
 
+### 📊 Diagrama: Jerarquía de la Infraestructura Global de AWS
+
+```mermaid
+flowchart TD
+    subgraph CORE["🌍 Infraestructura Principal"]
+        direction TB
+        R["🌐 Regiones (33+)<br/>Ubicaciones geográficas aisladas"]
+        AZ["🏢 Zonas de Disponibilidad (105+)<br/>Mínimo 3 por región"]
+        DC["🖥️ Centros de Datos<br/>Uno o más por AZ"]
+        R --> AZ
+        AZ --> DC
+    end
+
+    subgraph EDGE["📡 Infraestructura de Borde"]
+        direction TB
+        EL["⚡ Edge Locations (600+)<br/>CloudFront, Route 53, Shield, WAF"]
+        REC["🗄️ Regional Edge Cache<br/>Caché intermedio más grande"]
+        EL --> REC
+    end
+
+    subgraph EXT["🔌 Extensiones"]
+        direction TB
+        LZ["🏙️ Local Zones<br/>Ciudades metropolitanas"]
+        WZ["📱 Wavelength Zones<br/>Redes 5G"]
+        OP["🏭 Outposts<br/>Tu centro de datos"]
+    end
+
+    style CORE fill:#232F3E,stroke:#FF9900,color:#FFFFFF
+    style EDGE fill:#1a73e8,stroke:#FF9900,color:#FFFFFF
+    style EXT fill:#0d904f,stroke:#FF9900,color:#FFFFFF
+    style R fill:#FF9900,stroke:#232F3E,color:#232F3E
+    style AZ fill:#e8710a,stroke:#232F3E,color:#FFFFFF
+    style DC fill:#d45b07,stroke:#232F3E,color:#FFFFFF
+    style EL fill:#1a73e8,stroke:#FFFFFF,color:#FFFFFF
+    style REC fill:#1565c0,stroke:#FFFFFF,color:#FFFFFF
+    style LZ fill:#0d904f,stroke:#FFFFFF,color:#FFFFFF
+    style WZ fill:#0d904f,stroke:#FFFFFF,color:#FFFFFF
+    style OP fill:#0d904f,stroke:#FFFFFF,color:#FFFFFF
+```
+
 ---
 
 ## 2. Regiones (Regions)
@@ -57,6 +97,38 @@ El examen espera que sepa elegir una región basándose en estos criterios:
 | **4. Precios** | Los costos varían entre regiones por impuestos y costos locales | us-east-1 suele ser la más económica |
 
 > **Tip de examen:** El **cumplimiento/soberanía de datos** es siempre el **primer factor** a considerar. Si una regulación exige que los datos estén en un país específico, eso anula cualquier otra consideración.
+
+### 📊 Diagrama: Los 4 Factores para Elegir una Región
+
+```mermaid
+flowchart TD
+    START["🤔 ¿Qué región elegir?"] --> F1
+
+    F1{"1️⃣ ¿Hay requisitos de<br/>CUMPLIMIENTO o<br/>soberanía de datos?"}
+    F1 -->|"Sí"| R1["⚖️ Elegir región que<br/>cumpla la regulación<br/>(ej. GDPR → eu-west-1)"]
+    F1 -->|"No"| F2
+
+    F2{"2️⃣ ¿Dónde están<br/>mis USUARIOS?"}
+    F2 -->|"Identificados"| R2["📍 Elegir región más<br/>cercana a los usuarios<br/>(ej. Brasil → sa-east-1)"]
+    F2 -->|"Globales"| F3
+
+    F3{"3️⃣ ¿El servicio que necesito<br/>está DISPONIBLE<br/>en la región?"}
+    F3 -->|"No en todas"| R3["🔍 Elegir región donde<br/>el servicio exista<br/>(nuevos → us-east-1 primero)"]
+    F3 -->|"Sí, en varias"| F4
+
+    F4{"4️⃣ ¿Cuál tiene<br/>mejor PRECIO?"}
+    F4 --> R4["💰 Elegir la más económica<br/>(us-east-1 suele ser<br/>la más barata)"]
+
+    style START fill:#FF9900,stroke:#232F3E,color:#232F3E
+    style F1 fill:#FF4444,stroke:#232F3E,color:#FFFFFF
+    style F2 fill:#e8710a,stroke:#232F3E,color:#FFFFFF
+    style F3 fill:#1a73e8,stroke:#232F3E,color:#FFFFFF
+    style F4 fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style R1 fill:#FF4444,stroke:#232F3E,color:#FFFFFF
+    style R2 fill:#e8710a,stroke:#232F3E,color:#FFFFFF
+    style R3 fill:#1a73e8,stroke:#232F3E,color:#FFFFFF
+    style R4 fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+```
 
 ### Servicios Globales (no atados a una región)
 
@@ -97,6 +169,51 @@ Este es un concepto **crítico** para la Alta Disponibilidad (HA).
 
 > **Tip de examen:** **Alta Disponibilidad = Multi-AZ** (dentro de una región). **Recuperación ante desastres (DR) = Multi-Región**. No confundir estos dos conceptos.
 
+### 📊 Diagrama: Patrones de Alta Disponibilidad Multi-AZ
+
+```mermaid
+flowchart LR
+    subgraph REGION["🌐 Región AWS (ej. us-east-1)"]
+        direction LR
+        subgraph AZ1["AZ-a"]
+            P1["🟢 Primario<br/>EC2 / RDS"]
+            S3_1["📦 S3"]
+            L1["⚡ Lambda"]
+        end
+        subgraph AZ2["AZ-b"]
+            P2["🟡 Standby<br/>RDS Réplica"]
+            S3_2["📦 S3"]
+            L2["⚡ Lambda"]
+        end
+        subgraph AZ3["AZ-c"]
+            P3["🔵 Activo<br/>EC2"]
+            S3_3["📦 S3"]
+            L3["⚡ Lambda"]
+        end
+
+        ELB["⚖️ ELB<br/>Distribuye tráfico"]
+        ELB --> P1
+        ELB --> P3
+        P1 -.->|"Failover<br/>automático"| P2
+    end
+
+    subgraph PATTERNS["📋 Patrones"]
+        PA["🔄 Activo-Pasivo<br/>RDS Multi-AZ"]
+        PB["⚡ Activo-Activo<br/>ELB + Auto Scaling"]
+        PC["🏗️ Por Diseño<br/>S3, DynamoDB, Lambda"]
+    end
+
+    style REGION fill:#232F3E,stroke:#FF9900,color:#FFFFFF
+    style AZ1 fill:#0d904f,stroke:#FFFFFF,color:#FFFFFF
+    style AZ2 fill:#e8710a,stroke:#FFFFFF,color:#FFFFFF
+    style AZ3 fill:#1a73e8,stroke:#FFFFFF,color:#FFFFFF
+    style PATTERNS fill:#FF9900,stroke:#232F3E,color:#232F3E
+    style ELB fill:#FF9900,stroke:#232F3E,color:#232F3E
+    style PA fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style PB fill:#e8710a,stroke:#232F3E,color:#FFFFFF
+    style PC fill:#1a73e8,stroke:#232F3E,color:#FFFFFF
+```
+
 ---
 
 ## 4. Ubicaciones de Borde (Edge Locations)
@@ -127,6 +244,44 @@ El examen distingue claramente entre **dónde se ejecutan los servidores** (Regi
 - Reduce la cantidad de solicitudes que llegan al origen.
 
 > **Tip de examen:** "Reducir latencia para usuarios globales al entregar contenido" = **CloudFront + Edge Locations**. "Ejecutar código cerca de los usuarios" = **Lambda@Edge**.
+
+### 📊 Diagrama: Flujo de Entrega de Contenido con Edge Locations
+
+```mermaid
+flowchart LR
+    USER["👤 Usuario<br/>en cualquier parte<br/>del mundo"] --> EL
+
+    subgraph EL["📡 Edge Location más cercana"]
+        CACHE{"¿Contenido<br/>en caché?"}
+        CF["☁️ CloudFront"]
+        R53["🔗 Route 53 (DNS)"]
+        SHIELD["🛡️ Shield (DDoS)"]
+        WAF["🔥 WAF (Filtrado)"]
+        LE["⚡ Lambda@Edge"]
+    end
+
+    CACHE -->|"✅ HIT"| RESP["⚡ Respuesta<br/>inmediata<br/>(baja latencia)"]
+    CACHE -->|"❌ MISS"| REC
+
+    subgraph REC["🗄️ Regional Edge Cache"]
+        CACHE2{"¿Contenido<br/>en caché?"}
+    end
+
+    CACHE2 -->|"✅ HIT"| RESP2["📦 Respuesta<br/>desde caché regional"]
+    CACHE2 -->|"❌ MISS"| ORIGIN
+
+    subgraph ORIGIN["🌐 Región AWS (Origen)"]
+        S3["📦 S3"]
+        ALB["⚖️ ALB + EC2"]
+    end
+
+    style USER fill:#FF9900,stroke:#232F3E,color:#232F3E
+    style EL fill:#1a73e8,stroke:#FF9900,color:#FFFFFF
+    style REC fill:#e8710a,stroke:#FF9900,color:#FFFFFF
+    style ORIGIN fill:#232F3E,stroke:#FF9900,color:#FFFFFF
+    style RESP fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style RESP2 fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+```
 
 ---
 
@@ -174,6 +329,35 @@ Las guías de estudio actualizadas para el CLF-C02 incluyen componentes de infra
 
 > **Tip de examen:** "AWS en mi datacenter" = **Outposts**. "Conexión privada dedicada" = **Direct Connect**. "Latencia ultrabaja en 5G" = **Wavelength**. "Latencia ultrabaja en una ciudad" = **Local Zones**. "Optimizar ruta de red global" = **Global Accelerator**.
 
+### 📊 Diagrama: Extensiones de Infraestructura - ¿Dónde se ejecuta AWS?
+
+```mermaid
+flowchart TD
+    AWS["☁️ AWS Cloud<br/>(Regiones + AZs)"]
+
+    AWS -->|"Extiende a<br/>ciudades"| LZ["🏙️ Local Zones<br/>Latencia ~1ms<br/>Gaming, streaming,<br/>renderizado"]
+    AWS -->|"Extiende a<br/>redes 5G"| WL["📱 Wavelength<br/>Latencia ultrabaja<br/>Apps móviles, AR/VR,<br/>IoT"]
+    AWS -->|"Extiende a<br/>tu datacenter"| OP["🏭 Outposts<br/>Mismas APIs de AWS<br/>Datos on-premises<br/>por regulación"]
+    AWS -->|"Conexión<br/>dedicada"| DC["🔌 Direct Connect<br/>Privada, hasta 100 Gbps<br/>Semanas de aprovisionamiento"]
+    AWS -->|"Optimiza<br/>ruta de red"| GA["🌍 Global Accelerator<br/>IPs estáticas anycast<br/>Sin caché, optimiza red"]
+
+    subgraph VS["🆚 CloudFront vs Global Accelerator"]
+        direction LR
+        CFR["☁️ CloudFront<br/>Cachea CONTENIDO<br/>en Edge Locations"]
+        GAR["🌍 Global Accelerator<br/>Optimiza RUTA DE RED<br/>sin caché"]
+    end
+
+    style AWS fill:#FF9900,stroke:#232F3E,color:#232F3E
+    style LZ fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style WL fill:#1a73e8,stroke:#232F3E,color:#FFFFFF
+    style OP fill:#e8710a,stroke:#232F3E,color:#FFFFFF
+    style DC fill:#232F3E,stroke:#FF9900,color:#FFFFFF
+    style GA fill:#232F3E,stroke:#FF9900,color:#FFFFFF
+    style VS fill:#232F3E,stroke:#FF9900,color:#FFFFFF
+    style CFR fill:#1a73e8,stroke:#FFFFFF,color:#FFFFFF
+    style GAR fill:#0d904f,stroke:#FFFFFF,color:#FFFFFF
+```
+
 ---
 
 ## 6. Conectividad de Red
@@ -191,6 +375,58 @@ El examen puede preguntar cómo conectar diferentes entornos:
 | **AWS PrivateLink** | Acceso privado a servicios AWS sin salir de la red | Alta | Privada |
 
 > **Tip de examen:** "Conectar dos VPCs" = **VPC Peering** (2 VPCs) o **Transit Gateway** (muchas VPCs). "Acceso privado a S3 sin internet" = **VPC Gateway Endpoint** o **PrivateLink**.
+
+### 📊 Diagrama: Conectividad de Red - ¿Cómo conecto mis entornos?
+
+```mermaid
+flowchart TD
+    subgraph ONPREM["🏢 On-Premises"]
+        CORP["🖥️ Centro de datos<br/>corporativo"]
+    end
+
+    subgraph AWSCLOUD["☁️ AWS Cloud"]
+        subgraph VPC1["VPC A"]
+            PUB1["🌐 Subnet Pública"]
+            PRIV1["🔒 Subnet Privada"]
+        end
+        subgraph VPC2["VPC B"]
+            PUB2["🌐 Subnet Pública"]
+            PRIV2["🔒 Subnet Privada"]
+        end
+        subgraph VPC3["VPC C"]
+            PRIV3["🔒 Subnet Privada"]
+        end
+
+        IGW["🚪 Internet Gateway<br/>VPC ↔ Internet público"]
+        NAT["📤 NAT Gateway<br/>Privada → Internet (solo salida)"]
+        TGW["🔀 Transit Gateway<br/>Hub central para muchas VPCs"]
+        PL["🔗 PrivateLink<br/>Acceso privado a servicios AWS"]
+
+        IGW --> PUB1
+        NAT --> PRIV1
+        TGW --> VPC1
+        TGW --> VPC2
+        TGW --> VPC3
+    end
+
+    CORP -->|"🔐 VPN<br/>Cifrada por internet"| TGW
+    CORP -->|"🔌 Direct Connect<br/>Privada dedicada"| TGW
+
+    VPC1 <-->|"🤝 VPC Peering<br/>(2 VPCs)"| VPC2
+
+    INTERNET["🌍 Internet"] --> IGW
+
+    style ONPREM fill:#e8710a,stroke:#232F3E,color:#FFFFFF
+    style AWSCLOUD fill:#232F3E,stroke:#FF9900,color:#FFFFFF
+    style VPC1 fill:#1a73e8,stroke:#FFFFFF,color:#FFFFFF
+    style VPC2 fill:#1a73e8,stroke:#FFFFFF,color:#FFFFFF
+    style VPC3 fill:#1a73e8,stroke:#FFFFFF,color:#FFFFFF
+    style TGW fill:#FF9900,stroke:#232F3E,color:#232F3E
+    style IGW fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style NAT fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style PL fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style INTERNET fill:#FFFFFF,stroke:#232F3E,color:#232F3E
+```
 
 ---
 
@@ -234,3 +470,61 @@ Para aprobar las preguntas sobre Infraestructura Global en el CLF-C02:
 - **"Optimizar ruta de red sin caché"** → Global Accelerator
 - **"Servicio global"** → IAM, CloudFront, Route 53
 - **"Centros de datos aislados dentro de una región"** → Zonas de Disponibilidad
+
+---
+
+### 📊 Diagrama: Árbol de Decisión para Preguntas del Examen
+
+```mermaid
+flowchart TD
+    Q["❓ Pregunta sobre<br/>Infraestructura Global"]
+
+    Q --> A{"¿El escenario habla de<br/>DISPONIBILIDAD o<br/>RESILIENCIA?"}
+    A -->|"Dentro de<br/>una región"| HA["✅ Multi-AZ<br/>(Zonas de Disponibilidad)"]
+    A -->|"Ante desastres<br/>regionales"| DR["✅ Multi-Región"]
+    A -->|"No"| B
+
+    B{"¿Habla de LATENCIA<br/>o entrega de<br/>contenido?"}
+    B -->|"CDN / caché<br/>contenido"| CF["✅ CloudFront<br/>+ Edge Locations"]
+    B -->|"Baja latencia<br/>en una ciudad"| LZ["✅ Local Zones"]
+    B -->|"Latencia ultrabaja<br/>5G / móvil"| WL["✅ Wavelength"]
+    B -->|"Optimizar ruta<br/>de red (sin caché)"| GA["✅ Global Accelerator"]
+    B -->|"No"| C
+
+    C{"¿Habla de CONECTIVIDAD<br/>on-premises ↔ AWS?"}
+    C -->|"Conexión privada<br/>dedicada"| DX["✅ Direct Connect"]
+    C -->|"Conexión cifrada<br/>por internet"| VPN["✅ AWS VPN"]
+    C -->|"AWS en mi<br/>datacenter"| OP["✅ Outposts"]
+    C -->|"No"| D
+
+    D{"¿Habla de conectar<br/>VPCs entre sí?"}
+    D -->|"2 VPCs"| PEER["✅ VPC Peering"]
+    D -->|"Muchas VPCs<br/>+ on-premises"| TGW["✅ Transit Gateway"]
+    D -->|"Acceso privado<br/>a servicios AWS"| PL["✅ PrivateLink"]
+    D -->|"No"| E
+
+    E{"¿Habla de elegir<br/>REGIÓN?"}
+    E -->|"Regulación /<br/>soberanía datos"| REG["✅ Cumplimiento<br/>(primer factor)"]
+    E -->|"Servicio global<br/>(no atado a región)"| GLOB["✅ IAM, CloudFront,<br/>Route 53"]
+
+    style Q fill:#FF9900,stroke:#232F3E,color:#232F3E
+    style A fill:#232F3E,stroke:#FF9900,color:#FFFFFF
+    style B fill:#232F3E,stroke:#FF9900,color:#FFFFFF
+    style C fill:#232F3E,stroke:#FF9900,color:#FFFFFF
+    style D fill:#232F3E,stroke:#FF9900,color:#FFFFFF
+    style E fill:#232F3E,stroke:#FF9900,color:#FFFFFF
+    style HA fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style DR fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style CF fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style LZ fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style WL fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style GA fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style DX fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style VPN fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style OP fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style PEER fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style TGW fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style PL fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style REG fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+    style GLOB fill:#0d904f,stroke:#232F3E,color:#FFFFFF
+```

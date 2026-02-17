@@ -24,6 +24,29 @@ El examen evalúa cómo las organizaciones mantienen el control y la coherencia 
 | **AWS Control Tower** | Configurar entorno multi-cuenta seguro | Automatizar Landing Zones con mejores prácticas |
 | **AWS Service Catalog** | Catálogo de productos aprobados | Controlar qué recursos pueden desplegar los equipos |
 
+### Jerarquía de servicios de gobernanza
+
+```mermaid
+flowchart TD
+    GOB["🏛️ Gobernanza AWS"] --> ORG["📋 AWS Organizations\nGestión multi-cuenta\n+ Facturación consolidada"]
+    GOB --> CT["🗼 AWS Control Tower\nLanding Zones\n+ Guardrails"]
+    GOB --> CFG["🔍 AWS Config\nAuditoría de configuración\n+ Config Rules"]
+    GOB --> SC["📦 Service Catalog\nProductos aprobados\n+ Control de despliegue"]
+
+    ORG -->|"Contiene"| OU["🗂️ OUs\n(Unidades Organizativas)"]
+    ORG -->|"Aplica"| SCP["🚫 SCPs\n(Políticas de Control)"]
+    CT -->|"Automatiza"| LZ["🏗️ Landing Zones"]
+    CT -->|"Aplica"| GR["🛡️ Guardrails\nPreventivos + Detectivos"]
+
+    style GOB fill:#FF9900,color:#fff
+    style ORG fill:#232F3E,color:#fff
+    style CT fill:#232F3E,color:#fff
+    style CFG fill:#232F3E,color:#fff
+    style SC fill:#232F3E,color:#fff
+    style SCP fill:#FF4444,color:#fff
+    style GR fill:#0d904f,color:#fff
+```
+
 ### AWS Organizations
 
 Herramienta principal para la gobernanza de múltiples cuentas:
@@ -85,6 +108,24 @@ El examen a menudo presenta escenarios donde un auditor solicita informes. Debe 
 
 > **Tip de examen:** "¿Quién eliminó el recurso?" = **CloudTrail**. "¿El recurso cumplía la norma?" = **AWS Config**. "Necesito el certificado ISO de AWS" = **Artifact**.
 
+### Flujo de auditoría: ¿Qué herramienta usar?
+
+```mermaid
+flowchart LR
+    AUD["🔎 Necesidad\nde Auditoría"] --> Q1{"¿Qué necesitas\nauditar?"}
+
+    Q1 -->|"Certificaciones\nde AWS"| ART["📜 AWS Artifact\nSOC, ISO, PCI\nInformes de AWS"]
+    Q1 -->|"Cumplimiento\nde MI cuenta"| AM["📋 Audit Manager\nGDPR, HIPAA\nRecopila evidencia"]
+    Q1 -->|"Quién hizo qué\n(actividad API)"| CT["🔍 CloudTrail\nLlamadas API\nAuditoría forense"]
+    Q1 -->|"Cómo está configurado\nun recurso"| CFG["⚙️ AWS Config\nHistorial de cambios\nConfig Rules"]
+
+    style AUD fill:#FF9900,color:#fff
+    style ART fill:#232F3E,color:#fff
+    style AM fill:#232F3E,color:#fff
+    style CT fill:#232F3E,color:#fff
+    style CFG fill:#232F3E,color:#fff
+```
+
 ---
 
 ## 3. Gestión de Identidad y Acceso (IAM)
@@ -118,6 +159,38 @@ Aunque IAM se menciona en otros temas, es fundamental para la seguridad y gobern
 
 > **Tip de examen:** "Acceso para empleados a múltiples cuentas AWS" = **IAM Identity Center**. "Autenticación para usuarios de una app móvil" = **Amazon Cognito**. "Credenciales temporales" = **STS o Roles de IAM**.
 
+### Ecosistema de identidad en AWS
+
+```mermaid
+flowchart TD
+    subgraph INTERNO["🔵 Usuarios internos (empleados)"]
+        direction TB
+        IAM["👤 IAM\nUsuarios, Grupos\nRoles, Políticas"]
+        SSO["🔑 IAM Identity Center\n(SSO)\nMúltiples cuentas AWS"]
+        AD["🏢 Directory Service\nIntegración con\nActive Directory"]
+    end
+
+    subgraph EXTERNO["🟠 Usuarios externos (clientes de la app)"]
+        direction TB
+        COG["📱 Amazon Cognito\nAutenticación web/móvil\nUser Pools + Identity Pools"]
+    end
+
+    subgraph TEMPORAL["🟡 Acceso temporal"]
+        direction TB
+        STS["⏱️ AWS STS\nCredenciales temporales\nAcceso entre cuentas"]
+        ROLES["🎭 IAM Roles\nIdentidades asumibles\nSin credenciales fijas"]
+    end
+
+    IAM -->|"Principio clave"| MP["🔒 Mínimo Privilegio\nSolo permisos necesarios"]
+    IAM -->|"Proteger con"| MFA["🛡️ MFA\nSegunda capa\nde autenticación"]
+
+    style INTERNO fill:#1a73e8,color:#fff
+    style EXTERNO fill:#FF9900,color:#fff
+    style TEMPORAL fill:#e8710a,color:#fff
+    style MP fill:#0d904f,color:#fff
+    style MFA fill:#0d904f,color:#fff
+```
+
 ---
 
 ## 4. Seguridad de la Infraestructura y Datos
@@ -138,6 +211,27 @@ El examen evalúa la **"Defensa en Profundidad"**, utilizando múltiples capas d
 
 > **Tip de examen:** "Firewall a nivel de instancia" = **Security Group**. "Firewall a nivel de subred" = **NACL**. "Proteger contra SQL injection en una app web" = **AWS WAF**.
 
+### Capas de firewall: Defensa en profundidad
+
+```mermaid
+flowchart TD
+    INET["🌐 Internet"] --> WAF["🔥 AWS WAF\nCapa 7 (HTTP/HTTPS)\nFiltra SQL injection, XSS"]
+    WAF --> NF["🧱 Network Firewall\nNivel de VPC\nInspección avanzada"]
+    NF --> NACL["📋 NACLs\nNivel de subred\n⚡ Stateless\nAllow + Deny explícito"]
+    NACL --> SG["🔒 Security Groups\nNivel de instancia\n🔄 Stateful\nSolo Allow (deny implícito)"]
+    SG --> EC2["🖥️ EC2"]
+
+    WAF -.-> W1["Reglas personalizables\nRate limiting\nGeo-blocking"]
+    NACL -.-> N1["Reglas numeradas\nSe evalúan en orden\nEntrada Y salida separadas"]
+    SG -.-> S1["Se referencian entre sí\nSi permite entrada,\nsalida automática"]
+
+    style WAF fill:#FF9900,color:#fff
+    style NF fill:#e8710a,color:#fff
+    style NACL fill:#1a73e8,color:#fff
+    style SG fill:#0d904f,color:#fff
+    style EC2 fill:#232F3E,color:#fff
+```
+
 ### Cifrado de Datos
 
 | Tipo | Cómo se logra | Servicios involucrados |
@@ -150,6 +244,30 @@ El examen evalúa la **"Defensa en Profundidad"**, utilizando múltiples capas d
 - **AWS Certificate Manager (ACM):** Provisiona y gestiona certificados SSL/TLS gratuitos para cifrado en tránsito.
 
 > **Tip de examen:** "Cifrar datos almacenados" = **KMS** (en reposo). "Cifrar datos en movimiento" = **SSL/TLS** (en tránsito). "Control total del hardware de cifrado" = **CloudHSM**.
+
+### Cifrado: En reposo vs En tránsito
+
+```mermaid
+flowchart LR
+    subgraph REPOSO["🔐 Cifrado en REPOSO (datos almacenados)"]
+        direction TB
+        KMS["🔑 AWS KMS\nClaves gestionadas\nIntegra con S3, EBS, RDS"]
+        HSM["🔒 CloudHSM\nHardware dedicado\nControl total del cliente"]
+        SSE["⚙️ S3 SSE\nCifrado automático\nen servidor"]
+    end
+
+    subgraph TRANSITO["🔄 Cifrado en TRÁNSITO (datos en movimiento)"]
+        direction TB
+        TLS["🌐 SSL/TLS (HTTPS)\nCifra comunicación\ncliente-servidor"]
+        VPN["🔗 VPN\nTúnel cifrado\nOn-premises ↔ AWS"]
+        ACM["📜 AWS ACM\nCertificados SSL/TLS\nGratuitos y renovación auto"]
+    end
+
+    REPOSO ~~~ TRANSITO
+
+    style REPOSO fill:#1a73e8,color:#fff
+    style TRANSITO fill:#0d904f,color:#fff
+```
 
 ---
 
@@ -176,6 +294,33 @@ Debe identificar qué servicio utilizar para detectar comportamientos maliciosos
 
 > **Tip de examen:** "Detectar actividad sospechosa en la cuenta" = **GuardDuty**. "Buscar vulnerabilidades en EC2" = **Inspector**. "Encontrar datos sensibles en S3" = **Macie**. "Vista centralizada de seguridad" = **Security Hub**.
 
+### Mapa de servicios de detección y protección
+
+```mermaid
+flowchart TD
+    HUB["🎛️ AWS Security Hub\nPanel centralizado\nAgrega todos los hallazgos"] --> GD
+    HUB --> INS
+    HUB --> MAC
+    HUB --> CFG["⚙️ AWS Config\nCumplimiento de\nconfiguración"]
+
+    GD["🕵️ GuardDuty\n🤖 Machine Learning\nDetecta amenazas"] -->|"Analiza"| GD1["📊 CloudTrail Logs\n📊 VPC Flow Logs\n📊 DNS Logs"]
+
+    INS["🔬 Inspector\nEscaneo de\nvulnerabilidades"] -->|"Escanea"| INS1["🖥️ EC2\n🐳 Contenedores\n⚡ Lambda"]
+
+    MAC["🔍 Macie\n🤖 Machine Learning\nDatos sensibles"] -->|"Analiza"| MAC1["🪣 Buckets S3\nPII, tarjetas\ndatos financieros"]
+
+    subgraph PROTECCION["🛡️ Protección activa"]
+        SH["🛡️ Shield\nAnti-DDoS\nCapas 3, 4 y 7"]
+        WAF2["🔥 WAF\nFirewall web\nCapa 7"]
+    end
+
+    style HUB fill:#FF9900,color:#fff
+    style GD fill:#232F3E,color:#fff
+    style INS fill:#232F3E,color:#fff
+    style MAC fill:#232F3E,color:#fff
+    style PROTECCION fill:#FF4444,color:#fff
+```
+
 ---
 
 ## 6. Protección DDoS
@@ -186,6 +331,34 @@ Debe identificar qué servicio utilizar para detectar comportamientos maliciosos
 | **AWS Shield Advanced** | Pagado ($3,000/mes) | 3, 4 y 7 | Equipo DRT, protección de costos, métricas avanzadas, integración con WAF |
 
 > **Tip de examen:** Shield Standard es **gratuito y automático**. Si la pregunta menciona "protección DDoS avanzada", "equipo de respuesta" o "protección de costos ante DDoS", la respuesta es **Shield Advanced**.
+
+### Shield Standard vs Shield Advanced
+
+```mermaid
+flowchart LR
+    subgraph STD["🛡️ Shield Standard (GRATIS)"]
+        direction TB
+        S1["✅ Activado por defecto"]
+        S2["✅ Capas 3 y 4"]
+        S3["✅ Protección automática\ncontra ataques comunes"]
+        S4["❌ Sin equipo DRT"]
+        S5["❌ Sin protección de costos"]
+    end
+
+    subgraph ADV["🛡️ Shield Advanced ($3,000/mes)"]
+        direction TB
+        A1["✅ Capas 3, 4 y 7"]
+        A2["✅ Equipo DRT\n(DDoS Response Team)"]
+        A3["✅ Protección de costos\n(reembolso por escalamiento)"]
+        A4["✅ Métricas avanzadas\nen tiempo real"]
+        A5["✅ Integración con WAF"]
+    end
+
+    STD -->|"¿Necesitas más\nprotección?"| ADV
+
+    style STD fill:#0d904f,color:#fff
+    style ADV fill:#FF9900,color:#fff
+```
 
 ---
 
@@ -198,6 +371,24 @@ Concepto teórico que puede aparecer en el examen:
 | **Confidencialidad** | Solo personas autorizadas acceden a los datos | IAM, KMS, cifrado, Security Groups |
 | **Integridad** | Los datos no son alterados sin autorización | Permisos restrictivos, versionado en S3, hashing |
 | **Disponibilidad** | Los sistemas funcionan cuando se necesitan | Multi-AZ, Auto Scaling, Shield (protección DDoS) |
+
+### Tríada CIA en AWS
+
+```mermaid
+flowchart TD
+    CIA["🔒 Tríada CIA"] --> C["🔐 Confidencialidad\n¿Quién puede VER\nlos datos?"]
+    CIA --> I["✅ Integridad\n¿Los datos son\nCORRECTOS?"]
+    CIA --> D["⚡ Disponibilidad\n¿El sistema\nFUNCIONA?"]
+
+    C --> C1["IAM + MFA\nKMS (cifrado)\nSecurity Groups\nPolíticas de acceso"]
+    I --> I1["Permisos restrictivos\nVersionado S3\nHashing\nCloudTrail (auditoría)"]
+    D --> D1["Multi-AZ\nAuto Scaling\nELB\nShield (anti-DDoS)"]
+
+    style CIA fill:#FF9900,color:#fff
+    style C fill:#1a73e8,color:#fff
+    style I fill:#0d904f,color:#fff
+    style D fill:#e8710a,color:#fff
+```
 
 ---
 
@@ -238,3 +429,67 @@ Para aprobar las preguntas sobre seguridad, gobernanza y cumplimiento en el CLF-
 - **"Mínimo privilegio"** → IAM, principio fundamental
 - **"DDoS gratis"** → Shield Standard
 - **"DDoS avanzado + equipo DRT"** → Shield Advanced
+
+### Árbol de decisión para preguntas del examen
+
+```mermaid
+flowchart TD
+    Q["❓ Pregunta sobre\nSeguridad, Gobernanza\no Cumplimiento"] --> Q1{"¿Sobre gobernanza\no multi-cuenta?"}
+    Q --> Q2{"¿Sobre auditoría\no cumplimiento?"}
+    Q --> Q3{"¿Sobre identidad\no acceso?"}
+    Q --> Q4{"¿Sobre firewalls\no red?"}
+    Q --> Q5{"¿Sobre cifrado?"}
+    Q --> Q6{"¿Sobre detección\nde amenazas?"}
+    Q --> Q7{"¿Sobre DDoS?"}
+
+    Q1 -->|"Múltiples cuentas\nfacturación"| A1["📋 Organizations\n+ SCPs"]
+    Q1 -->|"Landing Zones\nmejores prácticas"| A1B["🗼 Control Tower"]
+
+    Q2 -->|"Certificaciones\nde AWS (SOC, ISO)"| A2["📜 Artifact"]
+    Q2 -->|"Quién hizo qué\n(llamadas API)"| A2B["🔍 CloudTrail"]
+    Q2 -->|"Configuración\nde recursos"| A2C["⚙️ Config"]
+    Q2 -->|"Evidencia para\nauditoría (GDPR)"| A2D["📋 Audit Manager"]
+
+    Q3 -->|"Empleados\nmúltiples cuentas"| A3["🔑 IAM Identity\nCenter (SSO)"]
+    Q3 -->|"Usuarios de\napp móvil/web"| A3B["📱 Cognito"]
+    Q3 -->|"Credenciales\ntemporales"| A3C["⏱️ STS / Roles"]
+
+    Q4 -->|"Nivel de\ninstancia"| A4["🔒 Security Group\n(Stateful)"]
+    Q4 -->|"Nivel de\nsubred"| A4B["📋 NACL\n(Stateless)"]
+    Q4 -->|"SQL injection\nXSS"| A4C["🔥 WAF"]
+
+    Q5 -->|"Datos en\nreposo"| A5["🔑 KMS"]
+    Q5 -->|"Datos en\ntránsito"| A5B["🌐 SSL/TLS + ACM"]
+    Q5 -->|"Hardware\ndedicado"| A5C["🔒 CloudHSM"]
+
+    Q6 -->|"Actividad\nsospechosa"| A6["🕵️ GuardDuty"]
+    Q6 -->|"Vulnerabilidades\nCVEs"| A6B["🔬 Inspector"]
+    Q6 -->|"Datos sensibles\nen S3"| A6C["🔍 Macie"]
+    Q6 -->|"Vista\ncentralizada"| A6D["🎛️ Security Hub"]
+
+    Q7 -->|"Protección\ngratis"| A7["🛡️ Shield Standard"]
+    Q7 -->|"Equipo DRT\nprotección costos"| A7B["🛡️ Shield Advanced"]
+
+    style Q fill:#FF9900,color:#fff
+    style A1 fill:#232F3E,color:#fff
+    style A1B fill:#232F3E,color:#fff
+    style A2 fill:#1a73e8,color:#fff
+    style A2B fill:#1a73e8,color:#fff
+    style A2C fill:#1a73e8,color:#fff
+    style A2D fill:#1a73e8,color:#fff
+    style A3 fill:#0d904f,color:#fff
+    style A3B fill:#0d904f,color:#fff
+    style A3C fill:#0d904f,color:#fff
+    style A4 fill:#e8710a,color:#fff
+    style A4B fill:#e8710a,color:#fff
+    style A4C fill:#e8710a,color:#fff
+    style A5 fill:#232F3E,color:#fff
+    style A5B fill:#232F3E,color:#fff
+    style A5C fill:#232F3E,color:#fff
+    style A6 fill:#1a73e8,color:#fff
+    style A6B fill:#1a73e8,color:#fff
+    style A6C fill:#1a73e8,color:#fff
+    style A6D fill:#1a73e8,color:#fff
+    style A7 fill:#FF4444,color:#fff
+    style A7B fill:#FF4444,color:#fff
+```

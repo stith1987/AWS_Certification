@@ -51,6 +51,44 @@ El examen evalúa si conoce las distintas formas de interactuar con AWS y cuánd
 
 > **Tip de examen:** Las tres formas principales de acceder a AWS son: **Console**, **CLI** y **SDK**. Todas llaman a la misma API por debajo. "Automatizar tareas con scripts" = **CLI**. "Integrar AWS en la app" = **SDK**.
 
+### Las 3 formas de interactuar con AWS
+
+```mermaid
+flowchart TD
+    subgraph CONSOLE["🌐 Console (Web)"]
+        direction TB
+        C1["GUI: apuntar y hacer clic"]
+        C2["Ideal para principiantes"]
+        C3["❌ No escalable para\ntareas repetitivas"]
+    end
+
+    subgraph CLI2["⌨️ CLI (Terminal)"]
+        direction TB
+        L1["Comandos en terminal"]
+        L2["Scripts de automatización"]
+        L3["✅ Tareas repetitivas\ny masivas"]
+    end
+
+    subgraph SDK["💻 SDK (Código)"]
+        direction TB
+        S1["Bibliotecas: Python, Java, JS..."]
+        S2["Integrado en la aplicación"]
+        S3["✅ Lógica de negocio\n+ AWS"]
+    end
+
+    CONSOLE --> API["🔄 Misma API\nde AWS"]
+    CLI2 --> API
+    SDK --> API
+
+    CS["☁️ CloudShell\nCLI en el navegador\nSin configuración"] -.-> CLI2
+
+    style CONSOLE fill:#FF9900,color:#fff
+    style CLI2 fill:#232F3E,color:#fff
+    style SDK fill:#1a73e8,color:#fff
+    style API fill:#0d904f,color:#fff
+    style CS fill:#e8710a,color:#fff
+```
+
 ---
 
 ## 2. Infraestructura como Código (IaC) y Aprovisionamiento
@@ -90,6 +128,24 @@ Herramienta **principal** de Infraestructura como Código (IaC) en AWS:
 
 > **Tip de examen:** "Plantillas JSON/YAML" o "despliegue repetible de infraestructura" = **CloudFormation**. "Chef o Puppet" = **OpsWorks**. "Definir infraestructura con Python/TypeScript" = **CDK**.
 
+### Herramientas de IaC: ¿Cuál elegir?
+
+```mermaid
+flowchart TD
+    IAC["🏗️ Infraestructura\ncomo Código (IaC)"] --> Q{"¿Cómo quieres\ndefinir la infra?"}
+
+    Q -->|"Plantillas\nJSON / YAML"| CF["📄 CloudFormation\nDeclarativo\nStacks + Rollback auto\nDrift detection"]
+    Q -->|"Código: Python\nTypeScript, Java"| CDK["💻 CDK\nGenera CloudFormation\nLógica de programación\n(bucles, condicionales)"]
+    Q -->|"Chef o Puppet\n(migración)"| OPS["🍳 OpsWorks\nRecetas / Manifiestos\nGestión de configuración"]
+
+    CDK -->|"Sintetiza a"| CF
+
+    style IAC fill:#FF9900,color:#fff
+    style CF fill:#232F3E,color:#fff
+    style CDK fill:#1a73e8,color:#fff
+    style OPS fill:#e8710a,color:#fff
+```
+
 ---
 
 ## 3. Modelos de Despliegue de Aplicaciones
@@ -122,10 +178,23 @@ Para una automatización más granular (DevOps), el examen evalúa el pipeline c
 | **AWS CodePipeline** | Orquestación | Orquesta todo el proceso CI/CD conectando las herramientas anteriores |
 | **AWS CodeArtifact** | Artefactos | Repositorio de paquetes/dependencias (npm, Maven, pip) |
 
-```
-CodeCommit → CodeBuild → CodeDeploy
-         ↑________________________↑
-              CodePipeline (orquesta)
+### Pipeline CI/CD en AWS
+
+```mermaid
+flowchart LR
+    subgraph PIPELINE["🔄 CodePipeline (orquesta todo el flujo)"]
+        direction LR
+        CC["📂 CodeCommit\nRepositorio Git\nCódigo fuente"] -->|"Push"| CB["🔨 CodeBuild\nCompila código\nEjecuta pruebas\nGenera artefactos"]
+        CB -->|"Artefacto"| CD["🚀 CodeDeploy\nDespliega en:\nEC2, Lambda\nOn-premises"]
+    end
+
+    CA["📦 CodeArtifact\nDependencias:\nnpm, Maven, pip"] -.->|"Alimenta"| CB
+
+    EB["🌱 Elastic Beanstalk\nAlternativa PaaS:\nSolo carga código\nAWS gestiona todo"]
+
+    style PIPELINE fill:#232F3E,color:#fff
+    style CA fill:#e8710a,color:#fff
+    style EB fill:#0d904f,color:#fff
 ```
 
 ### AWS Amplify
@@ -159,6 +228,26 @@ Servicio central para la gestión operativa:
 | **Automation** | Crear runbooks para automatizar tareas operativas comunes |
 
 > **Tip de examen:** "Ejecutar comandos en cientos de EC2 a la vez" o "parchear servidores automáticamente" = **Systems Manager**. "Conectarse a EC2 sin SSH" = **Session Manager**.
+
+### AWS Systems Manager: Capacidades principales
+
+```mermaid
+flowchart TD
+    SSM["🛠️ AWS Systems Manager\nGestión operativa centralizada\n(AWS + On-premises)"] --> RC["⚡ Run Command\nEjecutar comandos\nen cientos de EC2\n(sin SSH)"]
+    SSM --> PM["🔧 Patch Manager\nParchear SO\nautomáticamente"]
+    SSM --> PS["🔑 Parameter Store\nAlmacenar configs\ny secretos (gratis)"]
+    SSM --> SM2["🖥️ Session Manager\nConectar a EC2\nsin abrir puertos SSH"]
+    SSM --> INV["📋 Inventory\nSoftware instalado\ny configuración"]
+    SSM --> AUTO["🤖 Automation\nRunbooks para\ntareas operativas"]
+
+    style SSM fill:#FF9900,color:#fff
+    style RC fill:#232F3E,color:#fff
+    style PM fill:#232F3E,color:#fff
+    style PS fill:#232F3E,color:#fff
+    style SM2 fill:#1a73e8,color:#fff
+    style INV fill:#232F3E,color:#fff
+    style AUTO fill:#232F3E,color:#fff
+```
 
 ### Automatización vs. Orquestación
 
@@ -211,6 +300,26 @@ Dos variantes:
 
 > **Tip de examen:** "Monitorear CPU y crear alarmas" = **CloudWatch**. "Quién hizo qué en la cuenta" = **CloudTrail**. "Depurar latencia entre microservicios" = **X-Ray**. "Estado de los servicios de AWS" = **Health Dashboard**.
 
+### Monitoreo: ¿Qué servicio usar?
+
+```mermaid
+flowchart TD
+    Q{"❓ ¿Qué necesitas\nmonitorear?"} -->|"Métricas, alarmas\ny logs"| CW["📊 CloudWatch\nCPU, red, disco\nAlarmas → SNS\nDashboards"]
+    Q -->|"Quién hizo qué\n(actividad API)"| CT["🔍 CloudTrail\nLlamadas API\nAuditoría forense"]
+    Q -->|"Latencia entre\nmicroservicios"| XR["🔬 X-Ray\nTrazas distribuidas\nCuellos de botella"]
+    Q -->|"Estado de\nservicios AWS"| HD["🏥 Health Dashboard"]
+
+    HD --> HD1["🌐 Service Health\nEstado general\nde AWS por región"]
+    HD --> HD2["👤 Personal Health\nEventos que afectan\nMIS recursos"]
+
+    style Q fill:#FF9900,color:#fff
+    style CW fill:#232F3E,color:#fff
+    style CT fill:#232F3E,color:#fff
+    style XR fill:#1a73e8,color:#fff
+    style HD1 fill:#e8710a,color:#fff
+    style HD2 fill:#0d904f,color:#fff
+```
+
 ---
 
 ## 6. Modelos de Implementación en la Nube
@@ -235,6 +344,46 @@ El examen puede preguntar sobre los diferentes modelos de despliegue:
 | **AWS Wavelength** | Infraestructura AWS en redes 5G de telecomunicaciones |
 
 > **Tip de examen:** "AWS en mi centro de datos" = **Outposts**. "Conexión privada dedicada" = **Direct Connect**. "Conexión cifrada por internet" = **VPN**. "Almacenamiento híbrido" = **Storage Gateway**.
+
+### Modelos de despliegue y conectividad híbrida
+
+```mermaid
+flowchart TD
+    subgraph CLOUD["☁️ Nube Pública (100% AWS)"]
+        direction TB
+        CL1["Toda la infra en AWS"]
+        CL2["Startup / nueva app"]
+    end
+
+    subgraph HYBRID["🔀 Híbrido (AWS + On-premises)"]
+        direction TB
+        HY1["Datos sensibles on-prem"]
+        HY2["Cargas web en AWS"]
+    end
+
+    subgraph ONPREM["🏢 On-Premises (Privada)"]
+        direction TB
+        OP1["Todo en datacenter propio"]
+        OP2["Regulaciones estrictas"]
+    end
+
+    HYBRID --> TOOLS
+
+    subgraph TOOLS["🔧 Servicios para entorno híbrido"]
+        direction TB
+        OUT["🏗️ Outposts\nHardware AWS\nen tu datacenter"]
+        DC["🔗 Direct Connect\nConexión privada\ndedicada"]
+        VPN2["🔒 VPN\nConexión cifrada\npor internet"]
+        SG["💾 Storage Gateway\nAlmacenamiento\nhíbrido"]
+        LZ["📍 Local Zones\nAWS cerca del\nusuario final"]
+        WL["📡 Wavelength\nAWS en redes\n5G"]
+    end
+
+    style CLOUD fill:#0d904f,color:#fff
+    style HYBRID fill:#e8710a,color:#fff
+    style ONPREM fill:#232F3E,color:#fff
+    style TOOLS fill:#1a73e8,color:#fff
+```
 
 ---
 
@@ -298,3 +447,63 @@ Para aprobar las preguntas sobre Métodos de Despliegue y Operación en el CLF-C
 - **"AWS en mi datacenter"** → Outposts
 - **"Conexión privada dedicada"** → Direct Connect
 - **"Híbrido + almacenamiento"** → Storage Gateway
+
+### Árbol de decisión para preguntas del examen
+
+```mermaid
+flowchart TD
+    Q["❓ Pregunta sobre\nDespliegue y Operación"] --> Q1{"¿Sobre interfaces\nde acceso?"}
+    Q --> Q2{"¿Sobre IaC o\naprovisionamiento?"}
+    Q --> Q3{"¿Sobre despliegue\nde aplicaciones?"}
+    Q --> Q4{"¿Sobre gestión\noperativa?"}
+    Q --> Q5{"¿Sobre monitoreo?"}
+    Q --> Q6{"¿Sobre modelo\nde despliegue?"}
+
+    Q1 -->|"Automatizar\ncon scripts"| A1["⌨️ CLI"]
+    Q1 -->|"Integrar AWS\nen la app"| A1B["💻 SDK"]
+    Q1 -->|"Terminal sin\nconfigurar"| A1C["☁️ CloudShell"]
+
+    Q2 -->|"Plantillas\nJSON/YAML"| A2["📄 CloudFormation"]
+    Q2 -->|"IaC con Python\nTypeScript"| A2B["💻 CDK"]
+    Q2 -->|"Chef o\nPuppet"| A2C["🍳 OpsWorks"]
+
+    Q3 -->|"Solo cargar código\nAWS gestiona infra"| A3["🌱 Elastic Beanstalk"]
+    Q3 -->|"Pipeline CI/CD\ncompleto"| A3B["🔄 CodePipeline"]
+    Q3 -->|"Repositorio\nGit privado"| A3C["📂 CodeCommit"]
+    Q3 -->|"Desplegar en\nEC2/Lambda"| A3D["🚀 CodeDeploy"]
+
+    Q4 -->|"Comandos remotos\nen EC2 / parches"| A4["🛠️ Systems Manager"]
+    Q4 -->|"Conectar a EC2\nsin SSH"| A4B["🖥️ Session Manager"]
+
+    Q5 -->|"Métricas, alarmas\nlogs"| A5["📊 CloudWatch"]
+    Q5 -->|"Quién hizo qué\n(API)"| A5B["🔍 CloudTrail"]
+    Q5 -->|"Latencia entre\nmicroservicios"| A5C["🔬 X-Ray"]
+    Q5 -->|"Estado de\nservicios AWS"| A5D["🏥 Health Dashboard"]
+
+    Q6 -->|"AWS en mi\ndatacenter"| A6["🏗️ Outposts"]
+    Q6 -->|"Conexión privada\ndedicada"| A6B["🔗 Direct Connect"]
+    Q6 -->|"Conexión cifrada\npor internet"| A6C["🔒 VPN"]
+    Q6 -->|"Almacenamiento\nhíbrido"| A6D["💾 Storage Gateway"]
+
+    style Q fill:#FF9900,color:#fff
+    style A1 fill:#232F3E,color:#fff
+    style A1B fill:#232F3E,color:#fff
+    style A1C fill:#232F3E,color:#fff
+    style A2 fill:#1a73e8,color:#fff
+    style A2B fill:#1a73e8,color:#fff
+    style A2C fill:#1a73e8,color:#fff
+    style A3 fill:#0d904f,color:#fff
+    style A3B fill:#0d904f,color:#fff
+    style A3C fill:#0d904f,color:#fff
+    style A3D fill:#0d904f,color:#fff
+    style A4 fill:#e8710a,color:#fff
+    style A4B fill:#e8710a,color:#fff
+    style A5 fill:#232F3E,color:#fff
+    style A5B fill:#232F3E,color:#fff
+    style A5C fill:#1a73e8,color:#fff
+    style A5D fill:#1a73e8,color:#fff
+    style A6 fill:#FF4444,color:#fff
+    style A6B fill:#FF4444,color:#fff
+    style A6C fill:#FF4444,color:#fff
+    style A6D fill:#FF4444,color:#fff
+```

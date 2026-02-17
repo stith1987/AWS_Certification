@@ -37,6 +37,36 @@ El examen evalúa su capacidad para distinguir entre las diferentes capas de def
 
 > **Tip de examen:** Security Groups = **stateful**, nivel de instancia, solo Allow. NACLs = **stateless**, nivel de subred, Allow y Deny. Esta distinción es una de las más preguntadas.
 
+### Security Groups vs NACLs
+
+```mermaid
+flowchart LR
+    subgraph SG["🔒 Security Groups"]
+        direction TB
+        SG1["🔄 Stateful"]
+        SG2["📍 Nivel de instancia"]
+        SG3["✅ Solo reglas Allow"]
+        SG4["🚫 Deny implícito"]
+        SG5["🔗 Se referencian entre sí"]
+        SG6["Por defecto:\n❌ Deny all inbound\n✅ Allow all outbound"]
+    end
+
+    subgraph NACL["📋 NACLs"]
+        direction TB
+        N1["⚡ Stateless"]
+        N2["📍 Nivel de subred"]
+        N3["✅ Reglas Allow Y Deny"]
+        N4["🔢 Se evalúan en orden"]
+        N5["📋 Reglas entrada Y salida"]
+        N6["Por defecto:\n✅ Allow all inbound\n✅ Allow all outbound"]
+    end
+
+    SG ~~~ NACL
+
+    style SG fill:#0d904f,color:#fff
+    style NACL fill:#1a73e8,color:#fff
+```
+
 ### Protección de Aplicaciones Web
 
 | Servicio | Protege contra | Capa |
@@ -73,6 +103,30 @@ El examen evalúa su capacidad para distinguir entre las diferentes capas de def
 | **AWS Network Firewall** | Firewall gestionado para proteger VPCs con inspección profunda de paquetes (DPI) y filtrado de dominio |
 
 > **Tip de examen:** "Gestionar reglas de firewall en múltiples cuentas" = **Firewall Manager**. "Inspección profunda de paquetes en VPC" = **Network Firewall**.
+
+### Arquitectura de protección de red completa
+
+```mermaid
+flowchart TD
+    INET["🌐 Internet"] --> SHIELD["🛡️ Shield\nAnti-DDoS\nCapas 3, 4 (+7 en Advanced)"]
+    SHIELD --> WAF["🔥 WAF\nCapa 7 (HTTP/HTTPS)\nSQL injection, XSS, bots"]
+    WAF --> NF["🧱 Network Firewall\nNivel de VPC\nInspección profunda (DPI)"]
+    NF --> NACL2["📋 NACLs\nNivel de subred\n⚡ Stateless"]
+    NACL2 --> SG2["🔒 Security Groups\nNivel de instancia\n🔄 Stateful"]
+    SG2 --> EC2["🖥️ Recurso (EC2)"]
+
+    FM["🎛️ Firewall Manager\nGestión centralizada\nMúltiples cuentas"] -.->|"Administra"| WAF
+    FM -.->|"Administra"| SHIELD
+    FM -.->|"Administra"| SG2
+
+    style SHIELD fill:#FF4444,color:#fff
+    style WAF fill:#FF9900,color:#fff
+    style NF fill:#e8710a,color:#fff
+    style NACL2 fill:#1a73e8,color:#fff
+    style SG2 fill:#0d904f,color:#fff
+    style EC2 fill:#232F3E,color:#fff
+    style FM fill:#232F3E,color:#fff
+```
 
 ---
 
@@ -134,6 +188,62 @@ Debe identificar qué herramienta utilizar según el tipo de amenaza o análisis
 
 > **Tip de examen:** "Detectar amenazas con ML" = **GuardDuty**. "Buscar vulnerabilidades CVE" = **Inspector**. "Vista centralizada de seguridad" = **Security Hub**. "Investigar causa raíz" = **Detective**.
 
+### Pipeline de detección → investigación → centralización
+
+```mermaid
+flowchart LR
+    subgraph DETECT["🔍 Detección"]
+        direction TB
+        GD["🕵️ GuardDuty\n🤖 ML + Logs\nDetecta amenazas"]
+        INS["🔬 Inspector\nVulnerabilidades\nCVEs en EC2/Lambda"]
+        MAC["🔍 Macie\nDatos sensibles\nPII en S3"]
+    end
+
+    subgraph INVEST["🔎 Investigación"]
+        direction TB
+        DET["🕵️ Detective\nCausa raíz\nVisualiza logs"]
+    end
+
+    subgraph CENTRAL["🎛️ Centralización"]
+        direction TB
+        HUB["📊 Security Hub\nPanel único\nPuntuación de seguridad\nCIS / PCI DSS"]
+    end
+
+    GD -->|"Hallazgo\nsospechoso"| DET
+    GD --> HUB
+    INS --> HUB
+    MAC --> HUB
+
+    subgraph MONITOR["📈 Monitoreo continuo"]
+        direction TB
+        CT["🔍 CloudTrail\n¿Quién hizo qué?\nActividad API"]
+        CW["📊 CloudWatch\n¿Cómo funciona?\nMétricas + Alarmas"]
+        CFG["⚙️ Config\n¿Cómo está configurado?\nHistorial de cambios"]
+    end
+
+    CT --> HUB
+    CFG --> HUB
+
+    style DETECT fill:#e8710a,color:#fff
+    style INVEST fill:#1a73e8,color:#fff
+    style CENTRAL fill:#FF9900,color:#fff
+    style MONITOR fill:#232F3E,color:#fff
+```
+
+### CloudTrail vs CloudWatch vs Config
+
+```mermaid
+flowchart TD
+    Q{"❓ ¿Qué quieres\nsaber?"} -->|"¿QUIÉN hizo qué?\n(actividad API)"| CT["🔍 CloudTrail\nRegistro de llamadas API\nQuién, qué, cuándo, IP"]
+    Q -->|"¿CÓMO funciona\nel recurso?\n(rendimiento)"| CW["📊 CloudWatch\nMétricas, logs\nAlarmas, dashboards"]
+    Q -->|"¿CÓMO ESTÁ\nconfigurado?\n(compliance)"| CFG["⚙️ Config\nHistorial de config\nConfig Rules"]
+
+    style Q fill:#FF9900,color:#fff
+    style CT fill:#232F3E,color:#fff
+    style CW fill:#1a73e8,color:#fff
+    style CFG fill:#0d904f,color:#fff
+```
+
 ---
 
 ## 3. Componentes de Protección de Datos y Secretos
@@ -178,6 +288,34 @@ Debe identificar qué herramienta utilizar según el tipo de amenaza o análisis
 
 > **Tip de examen:** "Datos sensibles en S3" = **Macie**. "Cifrar datos almacenados" = **KMS**. "Control total del hardware de cifrado" = **CloudHSM**. "Rotar contraseñas de BD" = **Secrets Manager**.
 
+### Protección de datos: cifrado y secretos
+
+```mermaid
+flowchart TD
+    DATA["📊 Protección\nde Datos"] --> CIFRADO["🔐 Cifrado"]
+    DATA --> SECRETOS["🔒 Secretos"]
+    DATA --> DESCUBRIR["🔍 Descubrimiento"]
+
+    CIFRADO --> REPOSO["En REPOSO"]
+    CIFRADO --> TRANSITO["En TRÁNSITO"]
+
+    REPOSO --> KMS["🔑 KMS\nClaves gestionadas\nAWS managed + CMKs\nIntegra con S3, EBS, RDS"]
+    REPOSO --> HSM["🔒 CloudHSM\nHardware dedicado\nFIPS 140-2 Level 3\nControl total del cliente"]
+
+    TRANSITO --> ACM["📜 ACM\nCertificados SSL/TLS\nGratuitos + renovación auto"]
+
+    SECRETOS --> SM["🔑 Secrets Manager\nRotación automática\nRDS, Redshift, DocumentDB\nAPI en runtime"]
+
+    DESCUBRIR --> MACIE["🔍 Macie\n🤖 ML en S3\nPII, tarjetas, datos salud"]
+
+    style DATA fill:#FF9900,color:#fff
+    style CIFRADO fill:#1a73e8,color:#fff
+    style SECRETOS fill:#e8710a,color:#fff
+    style DESCUBRIR fill:#0d904f,color:#fff
+    style KMS fill:#232F3E,color:#fff
+    style HSM fill:#232F3E,color:#fff
+```
+
 ---
 
 ## 4. Recursos de Cumplimiento y Auditoría
@@ -203,6 +341,32 @@ El examen distingue entre herramientas que configuran seguridad y herramientas q
 - Mapea los controles de AWS a los requisitos de la normativa seleccionada.
 
 > **Tip de examen:** "Descargar certificación ISO/SOC de AWS" = **Artifact**. "Demostrar que mi configuración cumple GDPR" = **Audit Manager**.
+
+### Artifact vs Audit Manager
+
+```mermaid
+flowchart LR
+    subgraph ARTIFACT["📜 AWS Artifact\n¿AWS cumple?"]
+        direction TB
+        AR1["Informes de cumplimiento\nDE AWS"]
+        AR2["SOC 1/2/3, ISO 27001\nPCI DSS, HIPAA, FedRAMP"]
+        AR3["Acuerdos: BAA, NDA"]
+        AR4["📥 Autoservicio gratuito"]
+    end
+
+    subgraph AUDIT["📋 Audit Manager\n¿YO cumplo?"]
+        direction TB
+        AU1["Auditoría de cumplimiento\nDE MI CUENTA"]
+        AU2["Frameworks: GDPR\nHIPAA, PCI DSS"]
+        AU3["Recopilación automática\nde evidencia"]
+        AU4["📊 Informes para auditoría"]
+    end
+
+    ARTIFACT ~~~ AUDIT
+
+    style ARTIFACT fill:#FF9900,color:#fff
+    style AUDIT fill:#1a73e8,color:#fff
+```
 
 ---
 
@@ -242,6 +406,27 @@ Herramienta que escanea su infraestructura y ofrece recomendaciones en **5 categ
 - Soporta modelos: BYOL, suscripción por hora/mes/año, contrato.
 
 > **Tip de examen:** "Recomendaciones de seguridad automatizadas" = **Trusted Advisor**. "Comprar software de terceros para AWS" = **Marketplace**.
+
+### Las 5 categorías de Trusted Advisor
+
+```mermaid
+flowchart TD
+    TA["🏆 AWS Trusted Advisor\n5 categorías de recomendaciones"] --> C1["💰 Optimización\nde Costos\nInstancias infrautilizadas\nReserved no usadas"]
+    TA --> C2["⚡ Rendimiento\nLímites cercanos al máximo\nEBS no optimizados"]
+    TA --> C3["🔒 Seguridad\nMFA en root\nPuertos abiertos\nSGs sin restricción"]
+    TA --> C4["🛡️ Tolerancia\na Fallos\nBackups no habilitados\nRecursos en 1 sola AZ"]
+    TA --> C5["📊 Límites\nde Servicio\nCuotas próximas\nal límite"]
+
+    PLAN["📋 Acceso según plan:\n🆓 Basic/Developer: 7 checks básicos\n💼 Business+: TODOS los checks"]
+
+    style TA fill:#FF9900,color:#fff
+    style C1 fill:#232F3E,color:#fff
+    style C2 fill:#232F3E,color:#fff
+    style C3 fill:#FF4444,color:#fff
+    style C4 fill:#232F3E,color:#fff
+    style C5 fill:#232F3E,color:#fff
+    style PLAN fill:#e8710a,color:#fff
+```
 
 ---
 
@@ -305,3 +490,66 @@ Para aprobar las preguntas sobre componentes y recursos de seguridad en el CLF-C
 - **"Cifrado en tránsito"** → ACM + SSL/TLS
 - **"Rotar secretos"** → Secrets Manager
 - **"5 categorías de recomendaciones"** → Trusted Advisor
+
+### Árbol de decisión para preguntas del examen
+
+```mermaid
+flowchart TD
+    Q["❓ Pregunta sobre\nComponentes y Recursos\nde Seguridad"] --> Q1{"¿Sobre firewall\no protección de red?"}
+    Q --> Q2{"¿Sobre detección\nde amenazas?"}
+    Q --> Q3{"¿Sobre cifrado\no datos?"}
+    Q --> Q4{"¿Sobre auditoría\no cumplimiento?"}
+    Q --> Q5{"¿Sobre soporte\no recomendaciones?"}
+
+    Q1 -->|"Nivel de instancia\nstateful"| A1["🔒 Security Groups"]
+    Q1 -->|"Nivel de subred\nstateless"| A1B["📋 NACLs"]
+    Q1 -->|"SQL injection\nXSS, bots"| A1C["🔥 WAF"]
+    Q1 -->|"Anti-DDoS"| A1D{"¿Gratis o\npagado?"}
+    Q1 -->|"Múltiples cuentas\ncentralizado"| A1E["🎛️ Firewall Manager"]
+    A1D -->|"Gratis"| A1F["🛡️ Shield Standard"]
+    A1D -->|"Equipo DRT\nprotección costos"| A1G["🛡️ Shield Advanced"]
+
+    Q2 -->|"Amenazas + ML\nen logs"| A2["🕵️ GuardDuty"]
+    Q2 -->|"Vulnerabilidades\nCVEs"| A2B["🔬 Inspector"]
+    Q2 -->|"Causa raíz\nde incidente"| A2C["🕵️ Detective"]
+    Q2 -->|"Panel único\ncentralizado"| A2D["📊 Security Hub"]
+    Q2 -->|"Quién hizo qué\n(API)"| A2E["🔍 CloudTrail"]
+    Q2 -->|"Métricas y\nalarmas"| A2F["📊 CloudWatch"]
+
+    Q3 -->|"Cifrar datos\nen reposo"| A3["🔑 KMS"]
+    Q3 -->|"Hardware dedicado\nFIPS 140-2"| A3B["🔒 CloudHSM"]
+    Q3 -->|"PII / datos\nsensibles en S3"| A3C["🔍 Macie"]
+    Q3 -->|"Rotar contraseñas\nde BD"| A3D["🔑 Secrets Manager"]
+    Q3 -->|"Certificados\nSSL/TLS"| A3E["📜 ACM"]
+
+    Q4 -->|"Certificaciones\nde AWS (SOC, ISO)"| A4["📜 Artifact"]
+    Q4 -->|"Mi cuenta cumple\nGDPR/HIPAA"| A4B["📋 Audit Manager"]
+    Q4 -->|"Historial de\nconfiguración"| A4C["⚙️ Config"]
+
+    Q5 -->|"Recomendaciones\nautomáticas\n5 categorías"| A5["🏆 Trusted Advisor"]
+    Q5 -->|"Software de\nterceros"| A5B["🛒 Marketplace"]
+
+    style Q fill:#FF9900,color:#fff
+    style A1 fill:#0d904f,color:#fff
+    style A1B fill:#1a73e8,color:#fff
+    style A1C fill:#FF9900,color:#fff
+    style A1F fill:#0d904f,color:#fff
+    style A1G fill:#FF4444,color:#fff
+    style A1E fill:#232F3E,color:#fff
+    style A2 fill:#232F3E,color:#fff
+    style A2B fill:#232F3E,color:#fff
+    style A2C fill:#232F3E,color:#fff
+    style A2D fill:#232F3E,color:#fff
+    style A2E fill:#232F3E,color:#fff
+    style A2F fill:#1a73e8,color:#fff
+    style A3 fill:#e8710a,color:#fff
+    style A3B fill:#e8710a,color:#fff
+    style A3C fill:#0d904f,color:#fff
+    style A3D fill:#e8710a,color:#fff
+    style A3E fill:#e8710a,color:#fff
+    style A4 fill:#1a73e8,color:#fff
+    style A4B fill:#1a73e8,color:#fff
+    style A4C fill:#1a73e8,color:#fff
+    style A5 fill:#FF9900,color:#fff
+    style A5B fill:#FF9900,color:#fff
+```
