@@ -23,6 +23,33 @@ El examen CLF-C02 se divide en cuatro dominios. El Dominio 1 (Conceptos de la Nu
 | Seguridad | Modelo de responsabilidad compartida |
 | Alcance global | Despliegue multirregional |
 
+### Mapa de interrelación de los 6 beneficios
+
+```mermaid
+flowchart TD
+    A["☁️ AWS Cloud"] --> B["💰 Economía"]
+    A --> C["⚡ Agilidad"]
+    A --> D["📈 Elasticidad"]
+    A --> E["🔒 Seguridad"]
+    A --> F["🌍 Alcance Global"]
+    A --> G["✅ Alta Disponibilidad"]
+
+    B -- "Pago por uso reduce riesgo" --> C
+    D -- "Escalar abajo = ahorro" --> B
+    F -- "Multi-AZ / Multi-Región" --> G
+    C -- "IaC + servicios gestionados" --> D
+    E -- "Responsabilidad compartida" --> C
+    G -- "Redundancia + DR" --> E
+
+    style A fill:#FF9900,color:#fff,stroke:#FF9900
+    style B fill:#232F3E,color:#fff
+    style C fill:#232F3E,color:#fff
+    style D fill:#232F3E,color:#fff
+    style E fill:#232F3E,color:#fff
+    style F fill:#232F3E,color:#fff
+    style G fill:#232F3E,color:#fff
+```
+
 ---
 
 ## 2. Beneficios Económicos (Cloud Economics)
@@ -34,6 +61,34 @@ Este es un tema recurrente y crítico en el examen. Evalúa si comprendes el cam
 - **Economías de escala:** Debido a que AWS tiene cientos de miles de clientes, puede lograr economías de escala masivas que una empresa individual no podría alcanzar. Esto se traduce en precios más bajos para el usuario final a medida que AWS crece.
 - **Dejar de adivinar la capacidad:** En el modelo local, los ingenieros deben estimar la capacidad máxima requerida, lo que lleva a un aprovisionamiento excesivo (gasto inútil) o insuficiente (caída del sistema). En AWS, la capacidad se ajusta a la demanda real.
 - **Reducción del TCO (Total Cost of Ownership):** AWS ofrece herramientas como **AWS Pricing Calculator** y **Migration Evaluator** para comparar el costo total de propiedad entre infraestructura on-premises y la nube, considerando costos ocultos como mantenimiento, refrigeración, espacio físico y personal.
+
+### CapEx vs OpEx
+
+```mermaid
+flowchart LR
+    subgraph CAPEX["❌ Modelo Tradicional (CapEx)"]
+        direction TB
+        C1["Inversión inicial grande"] --> C2["Comprar servidores"]
+        C2 --> C3["Construir data center"]
+        C3 --> C4["Contratar personal"]
+        C4 --> C5["Mantener hardware"]
+        C5 --> C6["⚠️ Capacidad fija\n(sobre/sub dimensionada)"]
+    end
+
+    subgraph OPEX["✅ Modelo AWS (OpEx)"]
+        direction TB
+        O1["Sin inversión inicial"] --> O2["Pago por uso"]
+        O2 --> O3["Escalar según demanda"]
+        O3 --> O4["AWS gestiona hardware"]
+        O4 --> O5["Enfoque en negocio"]
+        O5 --> O6["💰 Paga solo lo que\nconsumes"]
+    end
+
+    CAPEX -- "Migrar a la nube" --> OPEX
+
+    style CAPEX fill:#FF4444,color:#fff,stroke:#CC0000
+    style OPEX fill:#00AA00,color:#fff,stroke:#008800
+```
 
 > **Tip de examen:** Cuando veas preguntas sobre "reducir costos" o "optimizar gastos", piensa en pago por uso, Reserved Instances, Savings Plans y el cambio de CapEx a OpEx.
 
@@ -68,6 +123,30 @@ Las fuentes enfatizan la distinción entre estos dos términos, y el examen a me
 
 > **Tip de examen:** Elasticidad = automático y bidireccional (sube y baja). Escalabilidad = capacidad de crecer. No son sinónimos.
 
+### Escalabilidad vs Elasticidad
+
+```mermaid
+flowchart TB
+    subgraph ESCV["Escalabilidad Vertical (Scale Up)"]
+        direction LR
+        V1["🖥️ t3.micro\n2 vCPU, 1 GB"] -->|"Más potencia"| V2["🖥️ m5.xlarge\n4 vCPU, 16 GB"] -->|"Más potencia"| V3["🖥️ r5.4xlarge\n16 vCPU, 128 GB"]
+    end
+
+    subgraph ESCH["Escalabilidad Horizontal (Scale Out)"]
+        direction LR
+        H1["🖥️ 1 instancia"] -->|"Más instancias"| H2["🖥️🖥️ 2 instancias"] -->|"Más instancias"| H3["🖥️🖥️🖥️ 3 instancias"]
+    end
+
+    subgraph ELAST["Elasticidad (Automática)"]
+        direction LR
+        E1["📉 Baja demanda\n1 instancia"] -->|"Auto Scale Out"| E2["📊 Alta demanda\n5 instancias"] -->|"Auto Scale In"| E3["📉 Baja demanda\n1 instancia"]
+    end
+
+    style ESCV fill:#1a73e8,color:#fff
+    style ESCH fill:#e8710a,color:#fff
+    style ELAST fill:#0d904f,color:#fff
+```
+
 ---
 
 ## 5. Alta Disponibilidad y Fiabilidad
@@ -80,6 +159,39 @@ El diseño de la Infraestructura Global de AWS es un habilitador clave de estos 
 - **Diseño para fallos (Design for Failure):** AWS promueve el principio de diseñar aplicaciones asumiendo que los componentes fallarán, utilizando arquitecturas desacopladas y redundantes.
 
 > **Tip de examen:** Recuerda la jerarquía: **Regiones > Zonas de Disponibilidad > Edge Locations**. Cada Región tiene mínimo 3 AZ.
+
+### Arquitectura de Alta Disponibilidad Multi-AZ
+
+```mermaid
+flowchart TB
+    U["👤 Usuarios"] --> ELB["⚖️ Elastic Load Balancer"]
+
+    subgraph REGION["🌎 Región AWS (ej. us-east-1)"]
+        ELB --> AZ1
+        ELB --> AZ2
+        ELB --> AZ3
+
+        subgraph AZ1["AZ-1a"]
+            EC2A["🖥️ EC2"] --> RDSA["🗄️ RDS Primary"]
+        end
+
+        subgraph AZ2["AZ-1b"]
+            EC2B["🖥️ EC2"] --> RDSB["🗄️ RDS Standby"]
+        end
+
+        subgraph AZ3["AZ-1c"]
+            EC2C["🖥️ EC2"]
+        end
+
+        RDSA -.->|"Replicación\nsíncrona"| RDSB
+    end
+
+    style REGION fill:#232F3E,color:#fff
+    style AZ1 fill:#1a73e8,color:#fff
+    style AZ2 fill:#1a73e8,color:#fff
+    style AZ3 fill:#1a73e8,color:#fff
+    style ELB fill:#FF9900,color:#fff
+```
 
 ---
 
@@ -96,6 +208,34 @@ Aunque la seguridad es un dominio propio (Dominio 2), también se considera un b
 
 > **Tip de examen:** El modelo de responsabilidad compartida es uno de los temas más preguntados. Asegúrate de saber qué le corresponde a AWS y qué al cliente.
 
+### Modelo de Responsabilidad Compartida
+
+```mermaid
+flowchart TB
+    subgraph CLIENTE["🔵 Responsabilidad del CLIENTE (Seguridad EN la nube)"]
+        direction TB
+        CL1["Datos del cliente"]
+        CL2["Configuración de plataforma y aplicaciones"]
+        CL3["IAM: Gestión de identidad y acceso"]
+        CL4["Cifrado del lado del cliente y datos"]
+        CL5["Configuración de Security Groups y NACLs"]
+        CL6["Parcheo del SO en EC2"]
+    end
+
+    subgraph AWS["🟠 Responsabilidad de AWS (Seguridad DE la nube)"]
+        direction TB
+        AW1["Software: Cómputo, almacenamiento, BD, red"]
+        AW2["Infraestructura de hardware global"]
+        AW3["Regiones, AZ, Edge Locations"]
+        AW4["Seguridad física de centros de datos"]
+    end
+
+    CLIENTE ~~~ AWS
+
+    style CLIENTE fill:#1a73e8,color:#fff
+    style AWS fill:#FF9900,color:#fff
+```
+
 ---
 
 ## Resumen para el Examen
@@ -109,6 +249,30 @@ Al prepararse para el CLF-C02, debe recordar que los beneficios de la nube **no 
 | Agilidad → Innovación | La velocidad de despliegue permite experimentar rápidamente |
 | Seguridad → Confianza | La responsabilidad compartida reduce la carga operativa |
 | Pago por uso → Menor riesgo | Solo pagas lo que consumes, sin inversión inicial |
+
+### Árbol de decisión para preguntas del examen
+
+```mermaid
+flowchart TD
+    Q["❓ Pregunta del examen sobre\nbeneficios de la nube"] --> Q1{"¿Habla de costos\no ahorro?"}
+    Q --> Q2{"¿Habla de velocidad\no despliegue?"}
+    Q --> Q3{"¿Habla de capacidad\no demanda?"}
+    Q --> Q4{"¿Habla de fallos\no redundancia?"}
+    Q --> Q5{"¿Habla de protección\no cumplimiento?"}
+
+    Q1 -->|Sí| A1["💰 Economía\nCapEx→OpEx, pago por uso\nSavings Plans, Reserved"]
+    Q2 -->|Sí| A2["⚡ Agilidad\nIaC, CloudFormation\nServicios gestionados"]
+    Q3 -->|Sí| A3["📈 Elasticidad\nAuto Scaling, ELB\nLambda (serverless)"]
+    Q4 -->|Sí| A4["✅ Alta Disponibilidad\nMulti-AZ, Multi-Región\nDiseño para fallos"]
+    Q5 -->|Sí| A5["🔒 Seguridad\nResp. Compartida\nIAM, KMS, Shield"]
+
+    style Q fill:#FF9900,color:#fff
+    style A1 fill:#232F3E,color:#fff
+    style A2 fill:#232F3E,color:#fff
+    style A3 fill:#232F3E,color:#fff
+    style A4 fill:#232F3E,color:#fff
+    style A5 fill:#232F3E,color:#fff
+```
 
 ### Palabras clave que debes asociar
 
