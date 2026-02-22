@@ -1,0 +1,19 @@
+Dentro del ecosistema de la computación en la nube, los servicios se dividen principalmente en tres modelos que ofrecen distintos niveles de control, flexibilidad y gestión: Infraestructura como Servicio (IaaS), Plataforma como Servicio (PaaS) y Software como Servicio (SaaS).
+La Plataforma como Servicio (PaaS) ocupa el nivel intermedio en este espectro y está diseñada fundamentalmente para optimizar y acelerar el trabajo de los creadores de software.
+A continuación, se analiza el modelo PaaS y cómo se ubica en el contexto más amplio de los servicios en la nube:
+1. Definición y Propósito Principal
+PaaS proporciona un entorno en la nube preconfigurado ("listo para usar") que incluye todo lo necesario para construir, probar y desplegar software. Esto abarca lenguajes de programación, tiempos de ejecución (runtimes), bases de datos, marcos de desarrollo (frameworks) y herramientas de integración y entrega continua (CI/CD). Su objetivo principal es ocultar y abstraer toda la complejidad de la infraestructura subyacente.
+2. Nivel de Control y Responsabilidad (Shared Responsibility)
+En el espectro de los modelos de servicio, PaaS ofrece un nivel de control equilibrado:
+Lo que gestiona el proveedor: A diferencia de IaaS, en PaaS el proveedor de la nube se encarga por completo de los servidores físicos, el almacenamiento, la red, los sistemas operativos y la aplicación de parches. El proveedor también suele manejar automáticamente el aprovisionamiento de capacidad, el equilibrio de carga y el autoescalado de los recursos.
+Lo que gestiona el cliente: Usted no tiene que administrar la infraestructura subyacente, pero mantiene el control total sobre el código de las aplicaciones que despliega y sobre las configuraciones específicas del entorno donde se alojan.
+3. Beneficios y Casos de Uso (El paraíso de los desarrolladores)
+Las fuentes describen a PaaS como el "punto óptimo" (sweet spot) para los desarrolladores. Al liberar a los equipos de TI de la carga administrativa de configurar y mantener servidores, PaaS permite a los desarrolladores centrarse únicamente en escribir código.
+Esto acelera enormemente el ciclo de desarrollo, reduce el tiempo de lanzamiento al mercado (time-to-market) y fomenta la innovación. Los casos de uso típicos incluyen la construcción rápida de aplicaciones web o móviles, el trabajo con arquitecturas de microservicios y la creación y gestión de APIs.
+4. Ejemplos de PaaS en la Industria
+En AWS: El servicio más representativo de este modelo es AWS Elastic Beanstalk. Con Elastic Beanstalk, un desarrollador simplemente carga el código de su aplicación y AWS maneja automáticamente todo el despliegue, el escalado, el equilibrio de carga y la monitorización. Algunos servicios de bases de datos gestionadas, como Amazon RDS, también operan bajo un modelo PaaS.
+Otros proveedores: Alternativas populares en el mercado incluyen Heroku, Google App Engine, Microsoft Azure App Service y Salesforce App Cloud.
+PaaS frente a IaaS y SaaS (El contexto más amplio)
+Para comprender completamente el lugar de PaaS, el examen requiere que sepa distinguirlo claramente de las otras capas:
+Frente a IaaS (Infraestructura como Servicio): IaaS le proporciona los "bloques de construcción" en bruto (como máquinas virtuales en EC2). IaaS le da el control total, pero le exige administrar e instalar el sistema operativo, los parches y el software. PaaS elimina esta carga.
+Frente a SaaS (Software como Servicio): SaaS es el nivel de mayor abstracción. Entrega un producto de software terminado y listo para ser utilizado por el usuario final a través de Internet (como Gmail o Zoom), sin que el cliente gestione nada de la infraestructura ni del desarrollo. PaaS es la plataforma que se utiliza para crear esas aplicaciones.

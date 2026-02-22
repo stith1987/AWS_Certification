@@ -1,249 +1,1100 @@
+# Examen de Práctica 2 — AWS CLF-C02
 
-Pregunta 30:
-Un becario de una empresa de TI aprovisionó una instancia EC2 bajo demanda basada en Linux con facturación por segundos, pero la canceló a los 30 segundos porque quería aprovisionar otro tipo de instancia. ¿Cuál es la duración por la que se facturaría la instancia?
+## Resumen de Resultados
 
-300 segundos
+| Métrica | Valor |
+|---|---|
+| **Preguntas totales** | 35 (Q30–Q65, falta Q55) |
+| **Correctas** ✅ | 14 |
+| **Parciales** ⚠️ | 6 |
+| **Incorrectas** ❌ | 15 |
+| **Sin respuesta** ❓ | 1 (Q55) |
+| **Puntuación estimada** | ~40–46% |
 
-Tu respuesta es incorrecta
-600 segundos
+---
 
-30 segundos
+## Temas Prioritarios para Repasar
 
-Respuesta correcta
-60 segundos
+1. **Facturación de EC2** — Tiempo mínimo por instancia (Linux vs Windows)
+2. **S3 Storage Classes** — Cuándo usar Standard-IA vs Glacier vs Deep Archive
+3. **Reserved Instances** — Qué servicios admiten reservas; qué plan es más económico
+4. **VPC Endpoints** — Gateway (S3 + DynamoDB) vs Interface (resto)
+5. **Acceso programático** — Access Keys vs MFA vs consola
+6. **KMS y CMK** — CMK para control total de claves; Secrets Manager para secretos
+7. **EFS vs EBS vs S3** — Cuándo montar en múltiples instancias simultáneamente
+8. **RDS Multi-AZ** — Failover automático; Aurora parches gestionados por AWS
+9. **AWS Organizations** — Compartir RI entre cuentas; facturación consolidada
+10. **Herramientas de costos** — Pricing Calculator vs Cost Explorer vs Budgets vs Compute Optimizer
+11. **AWS Abuse Team** — Equipo específico para uso prohibido
+12. **AWS CAF** — Perspectivas y stakeholders por perspectiva
+13. **Beneficios de la nube** — Los 6 beneficios (CapEx→OpEx, escala, velocidad, elasticidad, agilidad, global)
 
-Explicación general
-Opción correcta:
+---
 
-60 segundos
+## Preguntas
 
-Existe una tarifa mínima de un minuto para las instancias EC2 basadas en Linux, por lo que ésta es la opción correcta.
+---
 
-Opciones incorrectas:
+### Pregunta 30 ❌ — Facturación Mínima de EC2 Linux
 
-30 segundos
+Un becario aprovisionó una instancia EC2 bajo demanda Linux con facturación por segundos, pero la canceló a los 30 segundos. ¿Cuál es la duración por la que se factura?
 
-300 segundos
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| 300 segundos | ❌ | |
+| **600 segundos** | ❌ | ← Tu respuesta |
+| 30 segundos | ❌ | |
+| **60 segundos** | ✅ | |
 
-600 segundos
+**Explicación:**
 
-Estas tres opciones contradicen los detalles proporcionados anteriormente en la explicación, por lo que son incorrectas.
+Las instancias EC2 basadas en Linux tienen **facturación por segundo** con una **duración mínima de 1 minuto (60 segundos)**. Aunque la instancia fue cancelada a los 30 segundos, se cobra el mínimo de 60 segundos.
 
-Referencia:
+| Sistema Operativo | Unidad mínima de facturación |
+|---|---|
+| **Linux** | 60 segundos (1 minuto) |
+| **Windows** | 3.600 segundos (1 hora) |
+| **RHEL / SLES** | 60 segundos (1 minuto) |
 
-https://aws.amazon.com/blogs/aws/new-per-second-billing-for-ec2-instances-and-ebs-volumes/
+> **Regla de oro:** EC2 Linux = mínimo 60 segundos. Si la instancia se cancela antes de 1 minuto, igual se cobra 1 minuto completo. Instancias Windows = mínimo 1 hora.
 
-Temática
-Facturación y precios
+`Dominio: Facturación y Precios`
 
-Pregunta 31:
-Una empresa quiere identificar la configuración óptima de recursos de AWS para sus cargas de trabajo, de modo que la empresa pueda reducir costes y aumentar el rendimiento de las cargas de trabajo. ¿Cuál de los siguientes servicios puede utilizarse para cumplir este requisito?
+---
 
-AWS Budgets
+### Pregunta 31 ✅ — Optimización de Recursos con ML
 
-Tu respuesta es correcta
-AWS Compute Optimizer
+Una empresa quiere identificar la configuración óptima de recursos AWS para sus cargas de trabajo. ¿Cuál es el servicio correcto?
 
-AWS Cost Explorer
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| AWS Budgets | ❌ | |
+| **AWS Compute Optimizer** | ✅ | ← Tu respuesta ✅ |
+| AWS Cost Explorer | ❌ | |
+| AWS Systems Manager | ❌ | |
 
-AWS Systems Manager
+**Explicación:**
 
-Explicación general
-Opción correcta:
+**AWS Compute Optimizer** usa Machine Learning para analizar las métricas de uso de recursos y recomendar el tipo y tamaño óptimo de instancia EC2, funciones Lambda, volúmenes EBS, y grupos de Auto Scaling.
 
-AWS Compute Optimizer
+| Servicio | Para qué sirve |
+|---|---|
+| **Compute Optimizer** | Recomendar recursos óptimos con ML (reduce sobreaprovisionamiento) |
+| **Cost Explorer** | Analizar y visualizar costes históricos y tendencias |
+| **Budgets** | Crear alertas cuando el gasto supera un umbral |
+| **Systems Manager** | Gestionar instancias EC2 (parches, inventario, run commands) |
 
-AWS Compute Optimizer recomienda los recursos de AWS óptimos para tus cargas de trabajo con el fin de reducir costes y mejorar el rendimiento, utilizando el aprendizaje automático para analizar las métricas de utilización históricas. Un aprovisionamiento excesivo de recursos puede generar costes de infraestructura innecesarios, y un aprovisionamiento insuficiente puede dar lugar a un rendimiento deficiente de las aplicaciones. Compute Optimizer te ayuda a elegir configuraciones óptimas para tres tipos de recursos de AWS: instancias de Amazon EC2, volúmenes de Amazon EBS y funciones de AWS Lambda, basándose en tus datos de utilización.
+> **Regla de oro:** ¿Quiero saber qué tipo de instancia debería usar para ahorrar? → **Compute Optimizer**. ¿Quiero ver cuánto gasté el mes pasado? → **Cost Explorer**. ¿Quiero que me avisen si me paso del presupuesto? → **Budgets**.
 
-Compute Optimizer recomienda hasta 3 opciones de entre más de 140 tipos de instancias EC2, así como una amplia gama de opciones de configuración de volúmenes EBS y funciones Lambda, para dimensionar correctamente tus cargas de trabajo. Compute Optimizer también proyecta cuál habría sido la utilización de la CPU, la utilización de la memoria y el tiempo de ejecución de tu carga de trabajo con las opciones de recursos de AWS recomendadas. Esto te ayuda a comprender cómo habría funcionado tu carga de trabajo con las opciones recomendadas antes de poner en práctica las recomendaciones.
+`Dominio: Tecnología`
 
-Cómo funciona AWS Compute Optimizer:  vía - https://aws.amazon.com/compute-optimizer/
+---
 
-Opciones incorrectas:
+### Pregunta 32 ✅ — Protección contra DDoS
 
-AWS Systems Manager - AWS Systems Manager es el centro de operaciones de AWS. Systems Manager proporciona una interfaz de usuario unificada para que puedas rastrear y resolver problemas operativos en todas tus aplicaciones y recursos de AWS desde un lugar central. Con Systems Manager, puedes automatizar tareas operativas para instancias de Amazon EC2 o instancias de Amazon RDS. También puedes agrupar recursos por aplicación, ver datos operativos para monitorizar y solucionar problemas, implementar flujos de trabajo de cambios preaprobados y auditar cambios operativos para tus grupos de recursos. Systems Manager simplifica la gestión de recursos y aplicaciones, acorta el tiempo para detectar y resolver problemas operativos, y facilita el funcionamiento y la gestión de tu infraestructura a escala. Systems Manager no puede utilizarse para identificar la configuración óptima de recursos para las cargas de trabajo que se ejecutan en AWS.
+¿Qué servicio de AWS protege automáticamente contra ataques DDoS?
 
-AWS Budgets - AWS Budgets te permite establecer presupuestos personalizados para realizar un seguimiento de tu coste y uso desde los casos de uso más sencillos a los más complejos. Con AWS Budgets, puedes elegir que se te avise por correo electrónico o notificación SNS cuando el coste y el uso reales o previstos superen el umbral de tu presupuesto, o cuando la utilización o cobertura reales de tu RI y planes de ahorro caigan por debajo del umbral deseado. Con las acciones de AWS Budgets, también puedes configurar acciones específicas para responder al estado de coste y uso en tus cuentas, de modo que si tu coste o uso supera o se prevé que supere tu umbral, se puedan ejecutar acciones automáticamente o con tu aprobación para reducir el gasto excesivo involuntario.
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **AWS Shield** | ✅ | ← Tu respuesta ✅ |
 
-AWS Cost Explorer - AWS Cost Explorer tiene una interfaz fácil de usar que te permite visualizar, comprender y administrar tus costes y uso de AWS a lo largo del tiempo. Cost Explorer Resource Rightsizing Recommendations y Compute Optimizer utilizan el mismo motor de recomendaciones. El motor de recomendaciones Compute Optimizer ofrece recomendaciones para ayudar a los clientes a identificar los tipos de instancia EC2 óptimos para sus cargas de trabajo. La consola y la API del Explorador de Costes muestran un subconjunto de estas recomendaciones que pueden suponer un ahorro de costes, y las aumenta con información de costes y ahorros específica del cliente (por ejemplo, información de facturación, créditos disponibles, RI y Planes de Ahorro) para ayudar a los propietarios de la Gestión de Costes a identificar rápidamente las oportunidades de ahorro mediante el redimensionamiento de la infraestructura. La consola Compute Optimizer y su API ofrecen todas las recomendaciones independientemente de las implicaciones de costes.
+**Explicación:**
 
-Referencia:
+**AWS Shield** ofrece protección contra ataques DDoS:
 
-https://aws.amazon.com/compute-optimizer/
+| Nivel | Coste | Protección | A quién aplica |
+|---|---|---|---|
+| **Shield Standard** | Gratis | Ataques DDoS comunes (L3/L4) | Todos los clientes automáticamente |
+| **Shield Advanced** | ~$3.000/mes | Ataques sofisticados + WAF + soporte 24/7 | Clientes con alto riesgo |
 
-Temática
-Tecnología
+> **Regla de oro:** AWS Shield Standard = gratis y automático para todos. Shield Advanced = protección premium adicional de pago. Para preguntas sobre DDoS → **AWS Shield**.
 
-Pregunta 32:
-¿Qué servicio de AWS puede utilizarse para mitigar un ataque de denegación de servicio distribuido (DDoS)?
+`Dominio: Seguridad y Conformidad`
 
-Tu respuesta es correcta
-AWS Shield
+---
 
-Amazon CloudWatch
+### Pregunta 33 ✅ — Trusted Advisor con Plan Basic/Developer
 
-AWS Key Management Service (AWS KMS)
+¿A qué comprobaciones de Trusted Advisor tienen acceso los planes Basic y Developer?
 
-AWS Systems Manager
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **Solo comprobaciones básicas de seguridad y límites de servicio** | ✅ | ← Tu respuesta ✅ |
+| Todas las comprobaciones de Trusted Advisor | ❌ | |
 
-Explicación general
-Opción correcta:
+**Explicación:**
 
-AWS Shield
+| Plan de Soporte | Acceso a Trusted Advisor |
+|---|---|
+| **Basic** | 7 comprobaciones básicas (seguridad y límites de servicio) |
+| **Developer** | 7 comprobaciones básicas (seguridad y límites de servicio) |
+| **Business** | Todas las comprobaciones (5 categorías completas) |
+| **Enterprise On-Ramp** | Todas las comprobaciones |
+| **Enterprise** | Todas las comprobaciones |
 
-AWS Shield es un servicio gestionado de protección contra la Denegación de Servicio Distribuida (DDoS) que protege las aplicaciones que se ejecutan en AWS. AWS Shield proporciona detección siempre activa y mitigaciones automáticas en línea que minimizan el tiempo de inactividad y la latencia de las aplicaciones, por lo que no es necesario contratar a AWS Support para beneficiarse de la protección DDoS. Hay dos niveles de AWS Shield: Standard y Advanced.
+> **Regla de oro:** Para acceder a **todas** las comprobaciones de Trusted Advisor (optimización de costes, rendimiento, tolerancia a errores, etc.) se necesita **mínimo el plan Business**.
 
-Todos los clientes de AWS se benefician de las protecciones automáticas de AWS Shield Standard, sin cargo adicional. AWS Shield Standard te defiende contra los ataques DDoS más comunes y frecuentes de la capa de red y transporte dirigidos a tu sitio web o aplicaciones. Cuando utilizas AWS Shield Standard con Amazon CloudFront y Amazon Route 53, recibes una protección de disponibilidad completa contra todos los ataques conocidos a la infraestructura (Capas 3 y 4).
+`Dominio: Facturación y Soporte`
 
-Para obtener mayores niveles de protección contra los ataques dirigidos a tus aplicaciones que se ejecutan en Amazon Elastic Compute Cloud (EC2), Elastic Load Balancer (ELB), Amazon CloudFront, AWS Global Accelerator y los recursos de Amazon Route 53, puedes suscribirte a AWS Shield Advanced. Además de las protecciones de red y de la capa de transporte que vienen con Standard, AWS Shield Advanced proporciona detección y mitigación adicionales contra ataques DDoS grandes y sofisticados, visibilidad casi en tiempo real de los ataques e integración con AWS WAF, un firewall de aplicaciones web.
+---
 
-Opciones incorrectas:
+### Pregunta 34 ❌ — Compartir Reserved Instances entre Cuentas
 
-Amazon CloudWatch - Amazon CloudWatch es un servicio de monitorización y observabilidad creado para ingenieros DevOps, desarrolladores, ingenieros de fiabilidad de sitios (SRE) y administradores de TI. CloudWatch proporciona datos y perspectivas procesables para monitorizar aplicaciones, responder a cambios de rendimiento en todo el sistema, optimizar la utilización de recursos y obtener una visión unificada de la salud operativa. Es un servicio excelente para construir sistemas resistentes.
+¿Qué servicio permite que una empresa comparta Reserved Instances entre múltiples cuentas AWS?
 
-AWS Systems Manager - AWS Systems Manager te proporciona visibilidad y control de tu infraestructura en AWS. Systems Manager proporciona una interfaz de usuario unificada para que puedas ver los datos operativos de varios servicios de AWS y te permite automatizar tareas operativas en todos tus recursos de AWS. Con Systems Manager, puedes agrupar recursos, como instancias de Amazon EC2, buckets de Amazon S3 o instancias de Amazon RDS, por aplicación, ver datos operativos para monitorizar y solucionar problemas, y tomar medidas sobre tus grupos de recursos.
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **AWS Systems Manager** | ❌ | ← Tu respuesta |
+| **AWS Organizations** | ✅ | |
 
-AWS Key Management Service (AWS KMS) - AWS Key Management Service (KMS) te facilita la creación y administración de claves criptográficas y el control de su uso en una amplia gama de servicios de AWS y en tus aplicaciones. AWS KMS es un servicio seguro y resistente que utiliza módulos de seguridad de hardware que han sido validados según FIPS 140-2, o están en proceso de validación, para proteger tus claves.
+**Explicación:**
 
-Referencia:
+**AWS Organizations** con facturación consolidada permite que los descuentos de Reserved Instances (RI) y Savings Plans se compartan automáticamente entre todas las cuentas de la organización. Si una cuenta tiene RI sin usar, otra cuenta puede beneficiarse del descuento.
 
-https://aws.amazon.com/shield/
+| Servicio | Para qué sirve |
+|---|---|
+| **AWS Organizations** | Agrupar cuentas, facturación consolidada, compartir RI/Savings Plans |
+| **AWS Systems Manager** | Gestionar operaciones de infraestructura (parches, inventario, automatización) |
 
-Temática
-Seguridad y normativa
+> **Regla de oro:** Compartir RI entre cuentas → **AWS Organizations** (facturación consolidada). Systems Manager es para gestión operacional de recursos, no para facturación.
 
-Pregunta 33:
-¿Cuál de los siguientes planes de AWS Support proporciona acceso únicamente a las comprobaciones básicas de las comprobaciones de buenas prácticas de AWS Trusted Advisor? (Selecciona dos)
+`Dominio: Facturación y Precios`
 
-Tu selección es correcta
-AWS Basic Support
+---
 
-AWS Enterprise Support
+### Pregunta 35 ❌ — Eliminar Cuenta de AWS Organizations
 
-AWS Business Support
+¿Qué requisito debe cumplir una cuenta antes de poder eliminarse de AWS Organizations?
 
-Tu selección es correcta
-AWS Developer Support
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| Enviar un ticket de soporte a AWS | ❌ | ← Tu respuesta |
+| **La cuenta debe poder funcionar de forma independiente (tener método de pago propio e información de contacto)** | ✅ | |
 
-AWS Enterprise On-Ramp Support
+**Explicación:**
 
-Explicación general
-Opciones correctas:
+Para eliminar una cuenta de AWS Organizations, la cuenta debe ser capaz de operar de manera independiente, lo que requiere:
+- **Método de pago propio** configurado en la cuenta
+- **Información de contacto** válida
+- **Que no sea la cuenta de administración** (management account)
 
-AWS Basic Support
+No se requiere un ticket de soporte para este proceso; se hace directamente desde la consola de AWS Organizations.
 
-El plan AWS Basic Support sólo proporciona acceso a lo siguiente:
+> **Regla de oro:** Eliminar cuenta de Organizations ≠ ticket de soporte. La cuenta debe poder sobrevivir sola (pago propio + info de contacto). Sin estos requisitos, AWS no permite la separación.
 
-Servicio de atención al cliente y comunidades - Acceso 24x7 al servicio de atención al cliente, documentación, Whitepapers y foros de soporte. AWS Trusted Advisor - Acceso a las comprobaciones básicas de Trusted Advisor y orientación para aprovisionar tus recursos siguiendo las mejores prácticas para aumentar el rendimiento y mejorar la seguridad. Salud de AWS - El panel de salud de tu cuenta : Una vista personalizada de la salud de tus servicios AWS, y alertas cuando tus recursos se vean afectados.
+`Dominio: Facturación y Gestión de Cuentas`
 
-AWS Developer Support
+---
 
-Deberías utilizar el plan AWS Developer Support si estás probando o realizando desarrollos iniciales en AWS y deseas tener la posibilidad de obtener soporte técnico por correo electrónico durante el horario laboral, así como orientación general sobre arquitectura a medida que construyes y pruebas. Este plan proporciona acceso sólo a las comprobaciones básicas de Trusted Advisor de la Cuota de Servicio y a las comprobaciones básicas de Seguridad.
+### Pregunta 36 ✅ — Transcripción y Síntesis de Voz
 
-Alerta de examen:
+¿Qué par de servicios convierte voz a texto y texto a voz respectivamente?
 
-Revisa las diferencias entre los planes AWS Developer Support, AWS Business Support, AWS Enterprise On-Ramp Support y AWS Enterprise Support, ya que puedes esperar al menos un par de preguntas en el examen:
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **Amazon Transcribe + Amazon Polly** | ✅ | ← Tu respuesta ✅ |
 
+**Explicación:**
 
+| Servicio | Función | Dirección |
+|---|---|---|
+| **Amazon Transcribe** | Reconocimiento de voz automático | Audio/Voz → Texto |
+| **Amazon Polly** | Síntesis de voz (TTS) | Texto → Audio/Voz |
+| **Amazon Comprehend** | Procesamiento de lenguaje natural (NLP) | Texto → Análisis |
+| **Amazon Rekognition** | Análisis de imágenes y vídeo | Imagen/Vídeo → Análisis |
+| **Amazon Lex** | Chatbots con voz y texto | Conversación |
 
+> **Regla de oro:** Transcribe = voz→texto (como un secretario que transcribe). Polly = texto→voz (como un narrador que lee en voz alta).
 
+`Dominio: Tecnología`
 
+---
 
+### Pregunta 37 ⚠️ — AWS CAF Perspectiva Platform
 
-vía - https://aws.amazon.com/premiumsupport/plans/
+¿Qué stakeholders están asociados con la perspectiva **Platform** del AWS Cloud Adoption Framework (CAF)?
 
-Opciones incorrectas:
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **CTO (Chief Technology Officer)** | ✅ | ← Tu respuesta ✅ |
+| CIO (Chief Information Officer) | ❌ | ← Tu respuesta ❌ |
+| **Arquitectos / Ingenieros de soluciones** | ✅ | (no seleccionado) |
 
-AWS Enterprise Support - El plan AWS Enterprise Support proporciona a los clientes un servicio similar al de un conserje, en el que el objetivo principal es ayudar al cliente a conseguir sus resultados y encontrar el éxito en el Cloud. Con AWS Enterprise Support, obtienes soporte técnico 24x7 de ingenieros de alta calidad, herramientas y tecnología para administrar automáticamente el estado de tu entorno, orientación arquitectónica consultiva y un administrador técnico de cuentas (TAM) designado para coordinar el acceso a programas proactivos/preventivos y a expertos en la materia de AWS. También obtienes acceso completo a las comprobaciones de buenas prácticas de AWS Trusted Advisor.
+**Explicación:**
 
-AWS Business Support - Deberías utilizar el plan AWS Business Support si tienes cargas de trabajo de producción en AWS y quieres acceso telefónico, por correo electrónico y por chat 24x7 a soporte técnico y orientación sobre arquitectura en el contexto de tus casos de uso específicos. También obtienes acceso completo a las comprobaciones de buenas prácticas de AWS Trusted Advisor.
+El AWS CAF tiene **6 perspectivas** con sus stakeholders correspondientes:
 
-AWS Enterprise On-Ramp Support - Deberías utilizar el plan AWS Enterprise On-Ramp Support si tienes cargas de trabajo de producción/negocio críticas en AWS y quieres acceso 24x7 a soporte técnico y necesitas orientación experta para crecer y optimizar en el Cloud. Obtendrás acceso completo a las comprobaciones de buenas prácticas de AWS Trusted Advisor.
+| Perspectiva | Stakeholders principales |
+|---|---|
+| **Business** | CEO, CFO, COO, CIO, CMO |
+| **People** | VP RRHH, Director RRHH, CIO |
+| **Governance** | CIO, Program Managers, Enterprise Architects |
+| **Platform** | **CTO, Arquitectos de soluciones, Ingenieros** |
+| **Security** | CISO, Ingenieros de seguridad |
+| **Operations** | VP Operaciones, Site Reliability Engineers |
 
-Referencia:
+> **Regla de oro:** Perspectiva Platform → **CTO + Arquitectos/Ingenieros** (los que diseñan y construyen la infraestructura técnica). El CIO está más en Business/Governance/People.
 
-https://aws.amazon.com/premiumsupport/plans/
+`Dominio: Conceptos de la Nube`
 
-Temática
-Conceptos del Cloud
+---
 
-Pregunta 34:
-Una empresa utiliza instancias EC2 reservadas en varias unidades y cada unidad tiene su propia cuenta de AWS. Sin embargo, algunas de las unidades infrautilizan sus instancias reservadas, mientras que otras unidades necesitan más instancias reservadas. Como Cloud Practitioner, ¿cuál de las siguientes recomendarías como la solución más rentable?
+### Pregunta 38 ✅ — Controles Físicos en Responsabilidad Compartida
 
-Utiliza AWS Trusted Advisor para gestionar las cuentas de AWS de todas las unidades y luego comparte las instancias EC2 reservadas entre todas las unidades
+En el Modelo de Responsabilidad Compartida, ¿quién es responsable de los controles físicos y medioambientales?
 
-Respuesta correcta
-Utiliza AWS Organizations para gestionar las cuentas de AWS de todas las unidades y luego comparte las instancias EC2 reservadas entre todas las unidades
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **AWS** | ✅ | ← Tu respuesta ✅ |
+| El cliente | ❌ | |
 
-Tu respuesta es incorrecta
-Utiliza AWS Systems Manager para gestionar las cuentas de AWS de todas las unidades y luego comparte las instancias EC2 reservadas entre todas las unidades
+**Explicación:**
 
-Utiliza AWS Cost Explorer para gestionar las cuentas de AWS de todas las unidades y luego comparte las instancias EC2 reservadas entre todas las unidades
+La seguridad **DE** la nube es responsabilidad de AWS, que incluye:
+- Instalaciones físicas (centros de datos)
+- Seguridad física (guardias, cámaras, acceso biométrico)
+- Controles medioambientales (temperatura, energía, extinción de incendios)
+- Hardware físico (servidores, switches, routers)
+- Hipervisor / capa de virtualización
 
-Explicación general
-Opción correcta:
+| Responsabilidad | AWS | Cliente |
+|---|---|---|
+| Seguridad física | ✅ | ❌ |
+| Hardware | ✅ | ❌ |
+| Sistema Operativo (EC2) | ❌ | ✅ |
+| Datos del cliente | ❌ | ✅ |
+| Configuración de red (VPC) | ❌ | ✅ |
 
-Utiliza AWS Organizations para gestionar las cuentas de AWS de todas las unidades y luego comparte las instancias EC2 reservadas entre todas las unidades
+> **Regla de oro:** Todo lo que es físico (edificios, servidores, cables) → AWS. Todo lo que es lógico (SO, datos, red virtual, acceso) → Cliente. La división es: seguridad **DE** la nube (AWS) vs. seguridad **EN** la nube (Cliente).
 
-AWS Organizations te ayuda a administrar centralmente la facturación; controlar el acceso, la normativa y la seguridad; y compartir recursos entre tus cuentas de AWS. Con AWS Organizaciones, puedes automatizar la creación de cuentas, crear grupos de cuentas que reflejen tus necesidades empresariales y aplicar políticas a estos grupos para su gobernanza. También puedes simplificar la facturación configurando un único método de pago para todas tus cuentas de AWS. AWS Organizaciones está disponible para todos los clientes de AWS sin coste adicional.
+`Dominio: Seguridad y Conformidad`
 
-Características principales de las organizaciones de AWS:  vía - https://aws.amazon.com/organizations/
+---
 
-Opciones incorrectas:
+### Pregunta 39 ⚠️ — Infraestructura Global de AWS
 
-Utiliza AWS Trusted Advisor para gestionar las cuentas de AWS de todas las unidades y luego comparte las instancias EC2 reservadas entre todas las unidades - AWS Trusted Advisor es una herramienta online que te proporciona orientación en tiempo real para ayudarte a aprovisionar tus recursos siguiendo las mejores prácticas de AWS sobre optimización de costes, seguridad, tolerancia a fallos, límites de servicio y mejora del rendimiento. No puedes utilizar Trusted Advisor para compartir las instancias EC2 reservadas entre varias cuentas de AWS.
+¿Cuáles de las siguientes afirmaciones sobre la infraestructura global de AWS son correctas? (Selecciona 2)
 
-Cómo funciona Trusted Advisor:  vía - https://aws.amazon.com/premiumsupport/technology/trusted-advisor/
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| Mínimo 2 Zonas de Disponibilidad por región | ❌ | ← Tu respuesta ❌ |
+| **Mínimo 3 Zonas de Disponibilidad por región** | ✅ | (no seleccionado) |
+| **Cada AZ consta de uno o más centros de datos** | ✅ | ← Tu respuesta ✅ |
 
-Utiliza AWS Cost Explorer para gestionar las cuentas de AWS de todas las unidades y luego comparte las instancias EC2 reservadas entre todas las unidades - AWS Cost Explorer te permite explorar tus costes y uso de AWS tanto a un alto nivel como a un nivel detallado de análisis, y te faculta para profundizar utilizando varias dimensiones de filtrado (por ejemplo, servicio de AWS, región, cuenta vinculada). No puedes utilizar AWS Cost Explorer para compartir las instancias EC2 reservadas entre varias cuentas de AWS.
+**Explicación:**
 
-Utiliza AWS Systems Manager para gestionar las cuentas de AWS de todas las unidades y luego comparte las instancias EC2 reservadas entre todas las unidades - Systems Manager proporciona una interfaz de usuario unificada para que puedas ver los datos operativos de varios servicios de AWS y te permite automatizar tareas operativas en todos tus recursos de AWS. Con Systems Manager, puedes agrupar recursos, como instancias de Amazon EC2, buckets de Amazon S3 o instancias de Amazon RDS, por aplicación, ver datos operativos para monitorizar y solucionar problemas, y tomar medidas sobre tus grupos de recursos. No puedes utilizar Systems Manager para compartir las instancias EC2 reservadas entre varias cuentas de AWS.
+| Concepto | Descripción |
+|---|---|
+| **Región** | Área geográfica con múltiples AZ (mínimo 3, normalmente 3-6) |
+| **Zona de Disponibilidad (AZ)** | Uno o más centros de datos físicamente separados dentro de una región |
+| **Local Zone** | Extensión de región más cercana a usuarios finales (baja latencia) |
+| **Edge Location / PoP** | Puntos de presencia para CloudFront y Route 53 (400+) |
 
-Cómo funciona AWS Systems Manager:  vía - https://aws.amazon.com/systems-manager/
+> **Regla de oro:** Región = mínimo **3 AZ** (no 2). Cada AZ = **1 o más** centros de datos aislados con energía, refrigeración y red independientes.
 
-Referencias:
+`Dominio: Conceptos de la Nube / Tecnología`
 
-https://aws.amazon.com/organizations/
+---
 
-https://aws.amazon.com/premiumsupport/technology/trusted-advisor/
+### Pregunta 40 ⚠️ — Orden de Aplicación de Créditos AWS
 
-https://aws.amazon.com/systems-manager/
+¿Cómo aplica AWS los créditos a la factura mensual?
 
-Temática
-Seguridad y normativa
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **Primero al servicio con créditos que expiran antes** | ✅ | ← Tu respuesta (parcial) |
+| El crédito 2 se aplica a S3 | ❌ | ← Tu respuesta ❌ |
+| **Primero los créditos que aplican a menos productos** | ✅ | (no seleccionado) |
 
-Pregunta 35:
-¿Cuál de las siguientes opciones es CORRECTA en relación con la eliminación de una cuenta de AWS Organizaciones AWS?
+**Explicación:**
 
-La cuenta de AWS no debe tener ninguna Política de Control de Servicios (SCP) asociada. Sólo entonces se puede eliminar de las organizaciones de AWS
+AWS aplica los créditos en el siguiente orden de prioridad:
 
-La cuenta de AWS puede eliminarse de AWS Systems Manager
+| Prioridad | Criterio | Descripción |
+|---|---|---|
+| 1° | **Soonest-expiring** | El crédito que caduca primero se aplica antes |
+| 2° | **Fewest products** | Si hay empate, el crédito que aplica a menos productos va primero |
+| 3° | **Oldest** | Si hay empate en ambos, el crédito más antiguo se aplica primero |
 
-Respuesta correcta
-La cuenta de AWS debe poder funcionar como cuenta independiente. Sólo entonces se puede eliminar de las organizaciones de AWS
+> **Regla de oro:** Los créditos AWS siguen la regla del "más urgente primero": el que caduca antes → el que aplica menos → el más viejo. AWS aplica automáticamente los créditos para minimizar la factura dentro de estas reglas.
 
-Tu respuesta es incorrecta
-Envía un ticket de soporte a AWS Support para eliminar la cuenta
+`Dominio: Facturación y Precios`
 
-Explicación general
-Opción correcta:
+---
 
-La cuenta de AWS debe poder funcionar como cuenta independiente. Sólo entonces se puede eliminar de las organizaciones de AWS
+### Pregunta 41 ✅ — AWS Lambda: Serverless
 
-Puedes eliminar una cuenta de tu organización sólo si la cuenta tiene la información necesaria para funcionar como cuenta independiente. Para cada cuenta que quieras convertir en autónoma, debes aceptar el Acuerdo de Cliente de AWS, elegir un plan de soporte, proporcionar y verificar la información de contacto requerida y proporcionar un método de pago actual. AWS utiliza el método de pago para cobrar cualquier actividad facturable (no de la capa gratuita de AWS) de AWS que se produzca mientras la cuenta no esté vinculada a una organización.
+¿Cuál es la característica principal de AWS Lambda?
 
-Opciones incorrectas:
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **Serverless (sin servidor)** | ✅ | ← Tu respuesta ✅ |
 
-Envía un ticket de soporte a AWS Support para eliminar la cuenta - AWS Support no necesita ayudarte a eliminar una cuenta de AWS de las Organizaciones de AWS.
+**Explicación:**
 
-La cuenta de AWS puede eliminarse de AWS Systems Manager - AWS Systems Manager te proporciona visibilidad y control de tu infraestructura en AWS. Systems Manager proporciona una interfaz de usuario unificada para que puedas ver los datos operativos de varios servicios de AWS y te permite automatizar tareas operativas como ejecutar comandos, administrar parches y configurar servidores en el Cloud de AWS, así como en la infraestructura local. Systems Manager no puede utilizarse para eliminar una cuenta de AWS de AWS Organizations.
+**AWS Lambda** es el servicio de computación serverless de AWS:
 
-La cuenta de AWS no debe tener ninguna Política de Control de Servicios (SCP) asociada. Sólo entonces se puede eliminar de las organizaciones de AWS - Esto no es un requisito previo para eliminar la cuenta de AWS. Los principales de la cuenta de AWS ya no se ven afectados por ninguna política de control de servicios (SCP) que se haya definido en la organización. Esto significa que las restricciones impuestas por esas SCP han desaparecido, y los usuarios y roles de la cuenta pueden tener más permisos de los que tenían antes.
+| Característica | Descripción |
+|---|---|
+| **Sin servidores** | No hay que aprovisionar ni gestionar instancias |
+| **Orientado a eventos** | Se ejecuta en respuesta a eventos (S3, API Gateway, DynamoDB, SNS, etc.) |
+| **Pago por uso** | Solo se paga por el tiempo de ejecución (milisegundos) |
+| **Escalado automático** | Escala automáticamente según la demanda |
+| **Máximo 15 minutos** | Tiempo máximo de ejecución por invocación |
 
-Referencia:
+> **Regla de oro:** "Sin servidor" + "en respuesta a eventos" + "código sin gestionar infraestructura" → **AWS Lambda** (PaaS / Serverless).
 
-https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html
+`Dominio: Tecnología`
 
-Temática
-Conceptos del Cloud
+---
 
+### Pregunta 42 ❌ — Clase de Almacenamiento S3 para Acceso Infrecuente
+
+Una empresa necesita almacenar datos que se acceden raramente, pero cuando se necesitan, la recuperación debe ser inmediata. ¿Qué clase de S3 es más adecuada?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| S3 Standard | ❌ | |
+| **S3 Glacier** | ❌ | ← Tu respuesta |
+| **S3 Standard-IA** | ✅ | |
+| S3 Intelligent-Tiering | ❌ | |
+
+**Explicación:**
+
+| Clase S3 | Acceso | Recuperación | Caso de uso |
+|---|---|---|---|
+| **S3 Standard** | Frecuente | Inmediata (ms) | Datos activos |
+| **S3 Standard-IA** | Infrecuente | **Inmediata (ms)** | Backups, DR, datos de referencia |
+| **S3 One Zone-IA** | Infrecuente | Inmediata | Datos secundarios (solo 1 AZ) |
+| **S3 Intelligent-Tiering** | Variable | Inmediata | Patrones de acceso impredecibles |
+| **S3 Glacier Instant** | Archivado | Inmediata | Archivos con acceso ocasional |
+| **S3 Glacier Flexible** | Archivado | 1–12 horas | Archivado a largo plazo |
+| **S3 Glacier Deep Archive** | Archivado | 12–48 horas | Archivado máximo a 7-10 años |
+
+> **Regla de oro:** Acceso infrecuente + recuperación INMEDIATA → **S3 Standard-IA**. Si la recuperación puede tardar horas → S3 Glacier. Si la recuperación puede tardar días → Deep Archive.
+
+`Dominio: Tecnología`
+
+---
+
+### Pregunta 43 ❌ — Costo de Transferencia EC2 → S3 Misma Región
+
+¿Cuánto cuesta transferir datos de una instancia EC2 a un bucket S3 dentro de la misma región?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| Se cobra la transferencia de entrada | ❌ | |
+| Se cobra la transferencia de salida | ❌ | |
+| **Se cobra transferencia de entrada y salida** | ❌ | ← Tu respuesta |
+| **La transferencia es gratuita** | ✅ | |
+
+**Explicación:**
+
+| Escenario de transferencia | Costo |
+|---|---|
+| **EC2 → S3 (misma región)** | **GRATIS** |
+| **S3 → EC2 (misma región)** | **GRATIS** |
+| EC2 → S3 (diferente región) | Se cobra |
+| S3 → Internet | Se cobra (transferencia de salida) |
+| Internet → S3 | GRATIS (entrada a AWS) |
+| EC2 (AZ-A) → EC2 (AZ-B) | Se cobra |
+| EC2 → EC2 (misma AZ, IP privada) | GRATIS |
+
+> **Regla de oro:** Transferencia de datos DENTRO de la misma región entre EC2 y S3 = **GRATIS**. La regla general: dentro de la misma región entre servicios AWS suele ser gratuita o muy barata; la salida a internet siempre se cobra.
+
+`Dominio: Facturación y Precios`
+
+---
+
+### Pregunta 44 ❌ — Reserved Instance Más Rentable
+
+¿Cuál de las siguientes opciones de Reserved Instance ofrece el mayor descuento?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| 1 año sin pago inicial | ❌ | |
+| 1 año con pago completo adelantado | ❌ | |
+| **3 años sin pago inicial** | ❌ | ← Tu respuesta |
+| **3 años con pago parcial adelantado** | ✅ | |
+
+**Explicación:**
+
+El orden de mayor a menor descuento de las Reserved Instances:
+
+| Opción | Ahorro aprox. |
+|---|---|
+| **3 años + All Upfront (pago completo)** | Máximo (~66%) |
+| **3 años + Partial Upfront (parcial)** | Alto (~60%) |
+| 3 años + No Upfront (sin pago inicial) | Moderado-alto |
+| 1 año + All Upfront | Moderado |
+| 1 año + Partial Upfront | Menor |
+| 1 año + No Upfront | Mínimo (~40%) |
+
+> **Regla de oro:** Más años = más descuento. Más pago adelantado = más descuento. El máximo es **3 años + All Upfront**. Si entre opciones similares, el "pago completo adelantado" siempre supera al "parcial" que supera al "sin pago".
+
+`Dominio: Facturación y Precios`
+
+---
+
+### Pregunta 45 ✅ — AWS SDK
+
+¿Qué herramienta proporciona APIs específicas por lenguaje de programación para interactuar con servicios AWS?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **AWS SDK** | ✅ | ← Tu respuesta ✅ |
+| AWS CLI | ❌ | |
+| AWS Management Console | ❌ | |
+
+**Explicación:**
+
+| Herramienta | Acceso | Para quién |
+|---|---|---|
+| **AWS SDK** | APIs por lenguaje (Python/Boto3, Java, JS, .NET, etc.) | Desarrolladores |
+| **AWS CLI** | Comandos de terminal | Administradores / DevOps |
+| **AWS Console** | Interfaz web gráfica | Todos |
+| **AWS CloudShell** | Terminal en el navegador con CLI preinstalada | Administradores |
+
+> **Regla de oro:** "API específica de lenguaje" + "integrar AWS en código" → **SDK**. "Comandos de terminal" → **CLI**. "Interfaz gráfica web" → **Console**.
+
+`Dominio: Tecnología`
+
+---
+
+### Pregunta 46 ✅ — Ventajas de Amazon RDS Gestionado
+
+¿Cuál es una ventaja de usar Amazon RDS en lugar de gestionar una base de datos en EC2?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **AWS gestiona automáticamente el hardware, SO y parches** | ✅ | ← Tu respuesta ✅ |
+
+**Explicación:**
+
+| Tarea | EC2 (BD auto-gestionada) | Amazon RDS (gestionado) |
+|---|---|---|
+| Parches del SO | Cliente | **AWS** |
+| Backups automáticos | Cliente | **AWS** |
+| Failover Multi-AZ | Cliente (complejo) | **AWS** (automático) |
+| Réplicas de lectura | Cliente | **AWS** (fácil) |
+| Monitoreo | Cliente | **AWS** (CloudWatch integrado) |
+| Escalado de almacenamiento | Manual | **AWS** (Auto Scaling) |
+
+> **Regla de oro:** RDS = PaaS → AWS gestiona SO, parches, backups, failover. El cliente solo gestiona los datos y la configuración de la BD. EC2+BD propia = IaaS → el cliente gestiona todo desde el SO.
+
+`Dominio: Tecnología`
+
+---
+
+### Pregunta 47 ✅ — Desacoplar Microservicios
+
+¿Qué par de servicios AWS permite desacoplar microservicios para mejorar la resiliencia?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **Amazon SQS + Amazon SNS** | ✅ | ← Tu respuesta ✅ |
+
+**Explicación:**
+
+| Servicio | Tipo | Caso de uso |
+|---|---|---|
+| **Amazon SQS** | Cola de mensajes (pull) | Desacoplar productores y consumidores; buffer de mensajes |
+| **Amazon SNS** | Notificaciones push (pub/sub) | Enviar mensajes a múltiples suscriptores simultáneamente |
+| **Amazon EventBridge** | Bus de eventos | Integrar aplicaciones basadas en eventos |
+| **Amazon Kinesis** | Streaming de datos | Procesar grandes volúmenes de datos en tiempo real |
+
+> **Regla de oro:** Desacoplar microservicios → **SQS** (cola) + **SNS** (notificaciones). SQS garantiza que los mensajes se procesen aunque el receptor esté ocupado. SNS distribuye el mismo mensaje a múltiples destinos.
+
+`Dominio: Tecnología`
+
+---
+
+### Pregunta 48 ❌ — Control Total de Claves de Cifrado
+
+Una empresa quiere tener control total sobre las claves de cifrado utilizadas para proteger sus datos en AWS. ¿Qué servicio debe usar?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| AWS Secrets Manager | ❌ | ← Tu respuesta |
+| **AWS KMS con CMK (Customer Managed Key)** | ✅ | |
+| AWS Certificate Manager | ❌ | |
+
+**Explicación:**
+
+| Servicio | Para qué sirve |
+|---|---|
+| **AWS KMS** | Gestión de claves de cifrado |
+| **CMK (Customer Managed Key)** | Claves creadas/controladas totalmente por el cliente en KMS |
+| **AWS Managed Key** | Claves gestionadas por AWS en KMS (menos control) |
+| **AWS Secrets Manager** | Gestionar secretos (contraseñas, API keys, connection strings) |
+| **ACM (Certificate Manager)** | Certificados TLS/SSL para dominios |
+
+| Tipo de clave en KMS | Control del cliente | Rotación |
+|---|---|---|
+| **CMK (Customer Managed)** | Total (crear, rotar, eliminar, políticas) | Manual o anual automática |
+| AWS Managed Key | Parcial (no se puede eliminar) | Automática cada 3 años |
+| AWS Owned Key | Ninguno | AWS gestiona |
+
+> **Regla de oro:** "Control total de mis claves de cifrado" → **KMS con CMK**. "Guardar contraseñas de bases de datos o API keys" → **Secrets Manager** (son secretos, no claves criptográficas).
+
+`Dominio: Seguridad y Conformidad`
+
+---
+
+### Pregunta 49 ✅ — Cifrado del Lado del Cliente
+
+Una empresa quiere cifrar los datos **antes** de enviarlos a Amazon S3 (cifrado del lado del cliente). ¿Qué herramienta debe usar?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **AWS Encryption SDK** | ✅ | ← Tu respuesta ✅ |
+| AWS KMS (cifrado lado servidor) | ❌ | |
+
+**Explicación:**
+
+| Tipo de cifrado | Dónde ocurre | Herramienta |
+|---|---|---|
+| **Lado del cliente (client-side)** | En la aplicación ANTES de enviar a AWS | **AWS Encryption SDK** |
+| **Lado del servidor SSE-S3** | En S3, AWS gestiona las claves | S3 nativo |
+| **Lado del servidor SSE-KMS** | En S3, claves en KMS | S3 + KMS |
+| **Lado del servidor SSE-C** | En S3, el cliente provee la clave | S3 + clave del cliente |
+
+> **Regla de oro:** "Cifrar ANTES de subir a S3" = cifrado del lado del cliente → **AWS Encryption SDK**. "S3 cifra automáticamente cuando guarda" = cifrado del lado del servidor.
+
+`Dominio: Seguridad y Conformidad`
+
+---
+
+### Pregunta 50 ❌ — Almacenamiento Compartido para Múltiples EC2
+
+Una empresa necesita almacenamiento compartido al que puedan acceder simultáneamente cientos de instancias EC2. ¿Cuál es el servicio correcto?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **Amazon S3** | ❌ | ← Tu respuesta |
+| **Amazon EFS** | ✅ | |
+| Amazon EBS | ❌ | |
+
+**Explicación:**
+
+| Servicio | Tipo | Acceso múltiple | Caso de uso |
+|---|---|---|---|
+| **Amazon EFS** | Sistema de archivos NFS | ✅ Cientos de instancias simultáneamente | Contenido compartido, CMS, Big Data |
+| **Amazon EBS** | Disco en bloque | ❌ Solo 1 instancia (excepto io1/io2 Multi-Attach limitado) | Volumen de arranque, BD en EC2 |
+| **Amazon S3** | Almacenamiento de objetos | ✅ (acceso HTTP/HTTPS, no montado como disco) | Backups, activos web, data lakes |
+
+> **Regla de oro:** Montar como disco en múltiples EC2 simultáneamente → **EFS**. S3 es de objetos (no se monta como sistema de archivos nativo). EBS es de bloque para una instancia.
+
+`Dominio: Tecnología`
+
+---
+
+### Pregunta 51 ✅ — Parches del SO en Amazon Aurora
+
+¿Quién es responsable de aplicar parches al sistema operativo subyacente de Amazon Aurora?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **AWS** | ✅ | ← Tu respuesta ✅ |
+| El cliente | ❌ | |
+
+**Explicación:**
+
+Amazon Aurora (y Amazon RDS) son servicios **gestionados (PaaS)**. AWS es responsable de:
+- Parches del sistema operativo subyacente
+- Actualizaciones del motor de base de datos (con ventana de mantenimiento)
+- Backups automáticos
+- Failover automático (Multi-AZ)
+- Replicación
+
+El cliente es responsable de:
+- Configuración de la base de datos
+- Gestión de usuarios y permisos de la BD
+- Diseño del esquema
+- Optimización de consultas
+
+> **Regla de oro:** RDS y Aurora = PaaS → AWS gestiona el SO y los parches. Si la pregunta dice "base de datos gestionada" → los parches del SO son de **AWS**.
+
+`Dominio: Seguridad y Conformidad`
+
+---
+
+### Pregunta 52 ❌ — Mayor Latencia en Recuperación de Datos
+
+¿Qué clase de almacenamiento S3 tiene la mayor latencia en la recuperación de datos?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| S3 Standard-IA | ❌ | |
+| **S3 Glacier Flexible** | ❌ | ← Tu respuesta |
+| S3 Glacier Instant Retrieval | ❌ | |
+| **S3 Glacier Deep Archive** | ✅ | |
+
+**Explicación:**
+
+Orden de menor a mayor latencia de recuperación:
+
+| Clase S3 | Recuperación | Latencia |
+|---|---|---|
+| S3 Standard / Standard-IA / One Zone-IA | Milisegundos | Más rápida |
+| S3 Intelligent-Tiering | Milisegundos a horas | Variable |
+| S3 Glacier Instant Retrieval | Milisegundos | Rápida |
+| S3 Glacier Flexible (Expedited) | 1–5 minutos | Media |
+| S3 Glacier Flexible (Standard) | 3–5 horas | Lenta |
+| S3 Glacier Flexible (Bulk) | 5–12 horas | Lenta |
+| **S3 Glacier Deep Archive** | **12–48 horas** | **Más lenta (Mayor latencia)** |
+
+> **Regla de oro:** Mayor latencia = **Glacier Deep Archive** (12-48 horas). Es la clase más barata de S3 pero con el tiempo de recuperación más largo. Ideal para datos que se archivan por 7-10 años y rara vez se recuperan.
+
+`Dominio: Tecnología`
+
+---
+
+### Pregunta 53 ❌ — Descuento Máximo de Instancias Spot
+
+¿Cuál es el descuento máximo aproximado de las instancias EC2 Spot respecto a las instancias On-Demand?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| 25% | ❌ | |
+| **50%** | ❌ | ← Tu respuesta |
+| 75% | ❌ | |
+| **90%** | ✅ | |
+
+**Explicación:**
+
+| Tipo de instancia EC2 | Descuento vs On-Demand | Interrupción |
+|---|---|---|
+| **On-Demand** | 0% (precio base) | Nunca |
+| **Reserved (1 año)** | hasta ~40% | Nunca |
+| **Reserved (3 años)** | hasta ~66% | Nunca |
+| **Savings Plans** | hasta ~66% | Nunca |
+| **Spot Instances** | **hasta ~90%** | Sí (con 2 min de aviso) |
+
+> **Regla de oro:** Las instancias Spot ofrecen hasta un **90% de descuento** sobre el precio On-Demand. La contrapartida: AWS puede interrumpirlas con 2 minutos de aviso cuando necesita la capacidad. Ideales para cargas de trabajo tolerantes a interrupciones (procesamiento por lotes, CI/CD, análisis).
+
+`Dominio: Facturación y Precios`
+
+---
+
+### Pregunta 54 ⚠️ — Servicios Compatibles con VPC Gateway Endpoint
+
+¿Qué servicios AWS son compatibles con VPC Gateway Endpoints? (Selecciona 2)
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **Amazon S3** | ✅ | ← Tu respuesta ✅ |
+| Amazon EC2 | ❌ | ← Tu respuesta ❌ |
+| **Amazon DynamoDB** | ✅ | (no seleccionado) |
+| Amazon RDS | ❌ | |
+
+**Explicación:**
+
+Existen dos tipos de VPC Endpoints:
+
+| Tipo | Servicios compatibles | Costo |
+|---|---|---|
+| **Gateway Endpoint** | **Solo S3 y DynamoDB** | Gratuito |
+| **Interface Endpoint (PrivateLink)** | La mayoría de servicios AWS | ~$0.01/hora por AZ |
+
+Los Gateway Endpoints permiten acceder a S3 y DynamoDB desde dentro de la VPC **sin pasar por internet**, usando la red privada de AWS.
+
+> **Regla de oro:** VPC Gateway Endpoint = **solo S3 y DynamoDB**. Para cualquier otro servicio AWS (EC2, RDS, SNS, SQS, etc.) se usa Interface Endpoint (PrivateLink).
+
+`Dominio: Tecnología / Redes`
+
+---
+
+### Pregunta 55 ❓ — Pregunta No Disponible
+
+*Esta pregunta no aparece en el archivo del examen.*
+
+---
+
+### Pregunta 56 ✅ — Servicios de Almacenamiento AWS
+
+¿Cuáles de los siguientes son servicios de almacenamiento de AWS? (Selecciona 2)
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **Amazon EFS** | ✅ | ← Tu respuesta ✅ |
+| **Amazon S3** | ✅ | ← Tu respuesta ✅ |
+
+**Explicación:**
+
+| Servicio | Tipo de almacenamiento |
+|---|---|
+| **Amazon S3** | Almacenamiento de objetos |
+| **Amazon EBS** | Almacenamiento en bloque |
+| **Amazon EFS** | Sistema de archivos compartido (NFS) |
+| **Amazon FSx** | Sistemas de archivos gestionados (Windows, Lustre, NetApp) |
+| **AWS Storage Gateway** | Híbrido (on-premises + nube) |
+| Amazon EC2 | Cómputo (no almacenamiento) |
+| Amazon RDS | Base de datos (no almacenamiento directo) |
+
+> **Regla de oro:** Los tres pilares del almacenamiento AWS: **S3** (objetos), **EBS** (bloque), **EFS** (archivos). Cualquiera de estos es almacenamiento. EC2, RDS, Lambda = no son servicios de almacenamiento.
+
+`Dominio: Tecnología`
+
+---
+
+### Pregunta 57 ✅ — Plan de Soporte para Interoperabilidad con Software Terceros
+
+¿Qué planes de soporte AWS incluyen asistencia de interoperabilidad con software de terceros?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| Basic | ❌ | |
+| Developer | ❌ | |
+| **Business** | ✅ | ← Tu respuesta ✅ |
+| **Enterprise** | ✅ | ← Tu respuesta ✅ |
+
+**Explicación:**
+
+| Plan de Soporte | Interoperabilidad 3rd party | Tiempo de respuesta crítico |
+|---|---|---|
+| **Basic** | ❌ | Solo foros |
+| **Developer** | ❌ | 12–24 horas |
+| **Business** | ✅ | 1 hora (sistema de producción caído) |
+| **Enterprise On-Ramp** | ✅ | 30 minutos |
+| **Enterprise** | ✅ | 15 minutos |
+
+> **Regla de oro:** Interoperabilidad con software de terceros (sistemas operativos, bases de datos, middleware, etc.) → mínimo **plan Business**. Basic y Developer son para aprendizaje, no para entornos de producción complejos.
+
+`Dominio: Facturación y Soporte`
+
+---
+
+### Pregunta 58 ✅ — Documentos de Conformidad HIPAA
+
+¿Qué servicio AWS permite acceder a documentos de conformidad como los informes HIPAA?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **AWS Artifact** | ✅ | ← Tu respuesta ✅ |
+| AWS Config | ❌ | |
+| AWS Compliance Center | ❌ | |
+
+**Explicación:**
+
+| Servicio | Para qué sirve |
+|---|---|
+| **AWS Artifact** | Repositorio de informes de conformidad (SOC, PCI-DSS, HIPAA, ISO, etc.) y acuerdos |
+| **AWS Config** | Registrar y evaluar la configuración de recursos AWS |
+| **AWS Security Hub** | Vista centralizada de alertas de seguridad y conformidad |
+| **AWS Audit Manager** | Automatizar la evaluación de controles de conformidad |
+
+> **Regla de oro:** "Descargar informe de conformidad" (HIPAA, SOC 1/2/3, PCI-DSS, ISO 27001) → **AWS Artifact**. Es el portal de documentos de auditoría y acuerdos legales de AWS.
+
+`Dominio: Seguridad y Conformidad`
+
+---
+
+### Pregunta 59 ❌ — Servicio de Almacén de Datos (Data Warehouse)
+
+¿Qué servicio AWS es un almacén de datos (data warehouse) gestionado para análisis a gran escala?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **AWS DMS** | ❌ | ← Tu respuesta |
+| **Amazon Redshift** | ✅ | |
+| Amazon RDS | ❌ | |
+| Amazon Aurora | ❌ | |
+
+**Explicación:**
+
+| Servicio | Tipo | Caso de uso |
+|---|---|---|
+| **Amazon Redshift** | Data Warehouse (columnar) | Análisis de petabytes de datos, BI, reporting |
+| **Amazon RDS** | Base de datos relacional (OLTP) | Aplicaciones transaccionales |
+| **Amazon Aurora** | BD relacional (OLTP) | Alta disponibilidad y rendimiento |
+| **AWS DMS** | Servicio de migración | Migrar bases de datos a AWS |
+| **Amazon Athena** | Query engine serverless | Consultar datos en S3 con SQL |
+| **Amazon EMR** | Big Data | Hadoop, Spark, análisis masivo |
+
+> **Regla de oro:** "Data warehouse" + "análisis de grandes volúmenes" + "consultas complejas" → **Amazon Redshift**. DMS = migrar bases de datos (no analizarlas).
+
+`Dominio: Tecnología`
+
+---
+
+### Pregunta 60 ❌ — Reportar Uso Prohibido de AWS
+
+Un cliente detecta que otra empresa está usando servicios AWS de forma maliciosa (spam, malware). ¿A quién debe reportarlo?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **AWS Support** | ❌ | ← Tu respuesta |
+| **AWS Abuse Team** | ✅ | |
+
+**Explicación:**
+
+| Equipo | Para qué contactar |
+|---|---|
+| **AWS Support** | Problemas técnicos con los propios recursos del cliente |
+| **AWS Abuse Team** | Reportar uso prohibido de AWS por terceros (spam, malware, escaneo de puertos, ataques) |
+| **AWS Security** | Vulnerabilidades de seguridad en servicios propios de AWS |
+
+El AWS Abuse Team se puede contactar en: `abuse@amazonaws.com`
+
+Usos prohibidos que deben reportarse: spam, ataques DDoS originados desde AWS, distribución de malware, contenido ilegal, phishing.
+
+> **Regla de oro:** "Otro usuario AWS hace algo malicioso/ilegal" → **AWS Abuse Team** (abuse@amazonaws.com). "Tengo un problema técnico con mis propios recursos" → **AWS Support**.
+
+`Dominio: Soporte y Seguridad`
+
+---
+
+### Pregunta 61 ❌ — Alta Disponibilidad con Failover Automático de Base de Datos
+
+¿Qué servicio proporciona alta disponibilidad para una base de datos con failover automático?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **AWS CloudFormation** | ❌ | ← Tu respuesta |
+| **Amazon RDS Multi-AZ** | ✅ | |
+| Amazon DynamoDB | ❌ | |
+
+**Explicación:**
+
+**Amazon RDS Multi-AZ** replica la base de datos de forma síncrona en una segunda Zona de Disponibilidad. En caso de fallo:
+- El **failover es automático** (generalmente en menos de 2 minutos)
+- El **endpoint de conexión no cambia** (la aplicación se reconecta automáticamente)
+- **No hay pérdida de datos** (réplica síncrona)
+
+| Servicio | Relación con alta disponibilidad |
+|---|---|
+| **RDS Multi-AZ** | Failover automático de BD entre AZ |
+| CloudFormation | Infraestructura como código (IaC); no gestiona failover |
+| DynamoDB | Alta disponibilidad nativa, sin configuración |
+| Route 53 | DNS con enrutamiento de failover para aplicaciones |
+
+> **Regla de oro:** "Failover automático de base de datos relacional" → **RDS Multi-AZ**. CloudFormation es para aprovisionar infraestructura, no para gestionar failover de bases de datos.
+
+`Dominio: Tecnología`
+
+---
+
+### Pregunta 62 ❌ — Acceso Programático a AWS
+
+¿Qué credenciales se usan para el acceso programático a AWS (SDK, CLI, API)?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| Usuario y contraseña de la consola | ❌ | |
+| **MFA (Multi-Factor Authentication)** | ❌ | ← Tu respuesta |
+| **Access Key ID + Secret Access Key** | ✅ | |
+
+**Explicación:**
+
+| Tipo de acceso | Credenciales |
+|---|---|
+| **Consola Web (Management Console)** | Usuario + Contraseña (+ MFA opcional) |
+| **Programático (SDK, CLI, API)** | **Access Key ID + Secret Access Key** |
+| **Roles IAM (recomendado para EC2/Lambda)** | Credenciales temporales (STS) |
+
+MFA es un factor de autenticación adicional para la consola web. No es la credencial de acceso programático (aunque MFA puede requerirse para asumir ciertos roles).
+
+> **Regla de oro:** Acceso programático (SDK/CLI/API) → **Access Key ID + Secret Access Key**. Las Access Keys se crean en IAM y deben tratarse como contraseñas (nunca subirlas a repositorios públicos).
+
+`Dominio: Seguridad y Conformidad`
+
+---
+
+### Pregunta 63 ⚠️ — Servicios que Admiten Instancias Reservadas
+
+¿Cuáles de los siguientes servicios AWS admiten el modelo de compra de Reserved Instances/capacidad reservada? (Selecciona 3)
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **Amazon EC2** | ✅ | ← Tu respuesta ✅ |
+| **Amazon S3** | ❌ | ← Tu respuesta ❌ |
+| **Amazon RDS** | ✅ | ← Tu respuesta ✅ |
+| **Amazon DynamoDB** | ✅ | (no seleccionado) |
+
+**Explicación:**
+
+| Servicio | ¿Admite reservas? | Tipo de reserva |
+|---|---|---|
+| **Amazon EC2** | ✅ | Reserved Instances (1 o 3 años) |
+| **Amazon RDS** | ✅ | Reserved DB Instances |
+| **Amazon DynamoDB** | ✅ | Reserved Capacity |
+| **Amazon ElastiCache** | ✅ | Reserved Cache Nodes |
+| **Amazon Redshift** | ✅ | Reserved Nodes |
+| **Amazon OpenSearch** | ✅ | Reserved Instances |
+| **Amazon S3** | ❌ | No tiene reservas (precio por uso) |
+| **AWS Lambda** | ❌ | No tiene reservas |
+| **Amazon DocumentDB** | ❌ | No tiene reservas |
+
+> **Regla de oro:** **S3 y Lambda NO tienen reservas**. Los principales servicios con reservas: EC2, RDS, DynamoDB, ElastiCache, Redshift. S3 solo tiene precio por uso (GB almacenado + solicitudes).
+
+`Dominio: Facturación y Precios`
+
+---
+
+### Pregunta 64 ⚠️ — Beneficios de la Nube AWS
+
+¿Cuáles son beneficios de migrar a AWS Cloud? (Selecciona 2)
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **Cambiar gastos de capital (CapEx) a gastos operativos (OpEx)** | ✅ | ← Tu respuesta ✅ |
+| Aumentar la velocidad de despliegue manteniendo los servidores propios | ❌ | ← Tu respuesta ❌ |
+| **Eliminar las conjeturas sobre la capacidad de infraestructura** | ✅ | (no seleccionado) |
+| Aumentar el CapEx para mayor control | ❌ | |
+
+**Explicación:**
+
+Los **6 beneficios de la nube AWS** (según AWS):
+
+| Beneficio | Descripción |
+|---|---|
+| **CapEx → OpEx** | De inversión en capital a gasto operativo (pago por uso) |
+| **Economías de escala** | AWS compra a mayor escala → precios más bajos para todos |
+| **Sin conjeturas de capacidad** | Escalar según demanda real, no predicciones |
+| **Mayor velocidad y agilidad** | Provisionar recursos en minutos, no semanas |
+| **Enfoque en el negocio** | Eliminar mantenimiento de datacenters |
+| **Alcance global** | Desplegar en múltiples regiones en minutos |
+
+> **Regla de oro:** Los 6 beneficios clave de AWS: (1) CapEx→OpEx, (2) economías de escala, (3) sin conjeturas de capacidad, (4) mayor velocidad/agilidad, (5) enfoque en el negocio, (6) alcance global. "Mantener servidores propios" contradice la propuesta de valor de la nube.
+
+`Dominio: Conceptos de la Nube`
+
+---
+
+### Pregunta 65 ❌ — Estimar el Costo Mensual de AWS
+
+Una empresa quiere estimar el costo mensual de usar un conjunto de servicios AWS antes de desplegarlos. ¿Qué herramienta debe usar?
+
+| Opción | Correcta | Tu respuesta |
+|---|---|---|
+| **AWS Budgets** | ❌ | ← Tu respuesta |
+| **AWS Pricing Calculator** | ✅ | |
+| AWS Cost Explorer | ❌ | |
+| AWS Compute Optimizer | ❌ | |
+
+**Explicación:**
+
+| Herramienta | Para qué sirve | Cuándo usar |
+|---|---|---|
+| **AWS Pricing Calculator** | Estimar costos FUTUROS de servicios planificados | Antes de desplegar (planificación) |
+| **AWS Cost Explorer** | Analizar y visualizar costos históricos | Después de desplegar (análisis) |
+| **AWS Budgets** | Crear alertas cuando el gasto supera un umbral | Monitoreo continuo |
+| **AWS Compute Optimizer** | Recomendar recursos óptimos con ML | Optimización de recursos existentes |
+| **AWS Trusted Advisor** | Revisar configuración con mejores prácticas | Auditoría general |
+
+> **Regla de oro:** "Estimar costos antes de desplegar" → **AWS Pricing Calculator**. "Ver cuánto gasté" → **Cost Explorer**. "Alertarme si me paso del presupuesto" → **Budgets**.
+
+`Dominio: Facturación y Precios`
+
+---
+
+## Guía Rápida de Repaso — Temas Clave del Examen 2
+
+### Herramientas de Costos AWS
+
+| Herramienta | Función principal | Cuándo usar |
+|---|---|---|
+| **Pricing Calculator** | Estimar costos futuros | Pre-despliegue |
+| **Cost Explorer** | Analizar histórico de costos | Post-despliegue |
+| **Budgets** | Alertas de presupuesto | Monitoreo continuo |
+| **Compute Optimizer** | Recomendar recursos óptimos (ML) | Optimización |
+| **Trusted Advisor** | Mejores prácticas (costos, seguridad, rendimiento, límites) | Auditoría |
+
+---
+
+### Clases de Almacenamiento S3 (de mayor a menor acceso)
+
+| Clase | Acceso | Recuperación | Caso de uso |
+|---|---|---|---|
+| S3 Standard | Frecuente | ms | Datos activos |
+| S3 Intelligent-Tiering | Variable | ms | Patrones impredecibles |
+| S3 Standard-IA | Infrecuente | ms | Backups, DR |
+| S3 One Zone-IA | Infrecuente | ms | Datos secundarios |
+| S3 Glacier Instant | Archivado | ms | Archivos con acceso ocasional |
+| S3 Glacier Flexible | Archivado | 1-12 h | Archivado largo plazo |
+| **S3 Glacier Deep Archive** | **Raro** | **12-48 h** | **Máximo archivado (7-10 años)** |
+
+---
+
+### VPC Endpoints: Tipos
+
+| Tipo | Servicios | Costo |
+|---|---|---|
+| **Gateway Endpoint** | **Solo S3 y DynamoDB** | Gratuito |
+| **Interface Endpoint (PrivateLink)** | La mayoría de servicios | ~$0.01/hora/AZ |
+
+---
+
+### Servicios AWS con Reservas (vs sin reservas)
+
+| ✅ Con reservas | ❌ Sin reservas |
+|---|---|
+| EC2, RDS, DynamoDB, ElastiCache, Redshift, OpenSearch | S3, Lambda, DocumentDB |
+
+---
+
+### AWS CAF — 6 Perspectivas y Stakeholders
+
+| Perspectiva | Stakeholders |
+|---|---|
+| **Business** | CEO, CFO, COO, CIO, CMO |
+| **People** | VP RRHH, Director RRHH |
+| **Governance** | CIO, Enterprise Architects, Program Managers |
+| **Platform** | **CTO, Arquitectos de soluciones, Ingenieros** |
+| **Security** | CISO, Ingenieros de seguridad |
+| **Operations** | VP Operaciones, SRE, IT Ops |
+
+---
+
+### Infraestructura Global AWS
+
+| Concepto | Detalle |
+|---|---|
+| **Región** | Mínimo **3 AZ** por región |
+| **AZ** | **1 o más** centros de datos físicamente separados |
+| **Edge Location** | 400+ puntos de presencia (CloudFront, Route 53) |
+| **Local Zone** | Extensión de región para baja latencia local |
+
+---
+
+### Tipos de Acceso a AWS
+
+| Tipo de acceso | Credencial |
+|---|---|
+| **Consola web** | Usuario + contraseña (+ MFA) |
+| **Programático (SDK/CLI/API)** | Access Key ID + Secret Access Key |
+| **Roles IAM (recomendado)** | Credenciales temporales (STS AssumeRole) |
+
+---
+
+### Descuentos EC2 por Tipo de Instancia
+
+| Tipo | Descuento vs On-Demand | Interrupción |
+|---|---|---|
+| On-Demand | 0% | Nunca |
+| Reserved (1 año) | ~40% | Nunca |
+| Reserved (3 años) | ~66% | Nunca |
+| Savings Plans | ~66% | Nunca |
+| **Spot** | **hasta 90%** | Sí (2 min aviso) |
+
+---
+
+### EFS vs EBS vs S3
+
+| Servicio | Tipo | Acceso múltiple | Montable en EC2 |
+|---|---|---|---|
+| **EFS** | Sistema de archivos NFS | ✅ Múltiples instancias | ✅ Sí |
+| **EBS** | Bloque | ❌ Solo 1 (excepto io1/io2) | ✅ Sí |
+| **S3** | Objetos | ✅ (HTTP) | ❌ No directamente |
+
+---
+
+### Contactos AWS Clave
+
+| Situación | Contacto |
+|---|---|
+| Problema técnico propio | **AWS Support** |
+| Uso prohibido por terceros (spam, malware) | **AWS Abuse Team** (abuse@amazonaws.com) |
+| Vulnerabilidad en servicio AWS | **AWS Security** |
+| Facturación / contratos | **AWS Billing** |
